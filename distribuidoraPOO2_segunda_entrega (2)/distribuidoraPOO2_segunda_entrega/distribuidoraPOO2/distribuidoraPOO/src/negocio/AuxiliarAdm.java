@@ -13,7 +13,7 @@ public class AuxiliarAdm extends Funcionario {
     private ArrayList<Cliente> clientesLista;
     private ArrayList<Produto> produtosLista;
 
-    private RepositorioCaminhao repCaminhao = new RepositorioCaminhao();
+    private RepositorioCaminhao repCaminhao;
     private RepositorioEstoque repEstoque = new RepositorioEstoque();
     private RepositorioFuncionario repFuncionario = new RepositorioFuncionario();
     private RepositorioPatio repPatio = new RepositorioPatio();
@@ -22,12 +22,13 @@ public class AuxiliarAdm extends Funcionario {
     // a instância de 'repEstoque' já é criada acima.
     private static final String loginCadastro = "adm2025";
 
-    public AuxiliarAdm(String cargo, double salario, String nome, int idade, String cpf, String telefone, String endereco, String email, String login, String matricula, RepositorioCliente repCliente, RepositorioEstoque repEstoque, RepositorioPatio repPatio){
+    public AuxiliarAdm(String cargo, double salario, String nome, int idade, String cpf, String telefone, String endereco, String email, String login, String matricula, RepositorioCliente repCliente, RepositorioEstoque repEstoque, RepositorioPatio repPatio, RepositorioCaminhao repCaminhao){
         super(cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula);
         this.login = login;
         this.repCliente = repCliente;
         this.repEstoque = repEstoque;
         this.repPatio = repPatio;
+        this.repCaminhao = repCaminhao; // Atribui a instância recebida
         this.clientesLista = new ArrayList<>();
         this.produtosLista = new ArrayList<>();
     }

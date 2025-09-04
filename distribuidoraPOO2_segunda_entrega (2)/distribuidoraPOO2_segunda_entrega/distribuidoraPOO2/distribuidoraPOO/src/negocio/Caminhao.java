@@ -1,7 +1,6 @@
 package negocio;
 
 import java.io.Serializable;
-
 import negocio.exceptions.VagaInsuficienteException;
 
 public class Caminhao  implements Serializable {
@@ -14,6 +13,7 @@ public class Caminhao  implements Serializable {
     private Patio patio;
     private boolean cadastrado = false;
 
+    // CONSTRUTOR ANTIGO (MANTIDO)
     public Caminhao(String placa, String modelo, int capacidade, String status, Patio patio, Motorista motorista) {
         this.placa = placa;
         this.capacidade = capacidade;
@@ -21,6 +21,15 @@ public class Caminhao  implements Serializable {
         this.patio = patio;
         this.motorista = motorista;
     }
+
+    // NOVO CONSTRUTOR SIMPLIFICADO PARA O CADASTRO
+    public Caminhao(String placa, int capacidade, String status) {
+        this.placa = placa;
+        this.capacidade = capacidade;
+        this.status = status;
+        this.cadastrado = true; // Já nasce cadastrado
+    }
+
     public Caminhao(){
 
     }
@@ -88,18 +97,14 @@ public class Caminhao  implements Serializable {
         }
 
         patio.setVagasDisponiveis(patio.getVagasDisponiveis() + 1);
-        this.status = "Fora do pátio";
-
-
+        this.status = "Disponivel";
     }
-
 
     @Override
     public String toString() {
         return "Caminhao{" +
                 "placa='" + placa + '\'' +
                 ", capacidade=" + capacidade +
-                ", motorista=" + motorista +
                 ", status='" + status + '\'' +
                 '}';
     }

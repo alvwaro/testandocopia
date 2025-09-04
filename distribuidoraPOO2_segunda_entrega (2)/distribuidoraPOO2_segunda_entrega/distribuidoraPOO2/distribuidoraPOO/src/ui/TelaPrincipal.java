@@ -12,15 +12,14 @@ public class TelaPrincipal {
     public static void main(String[] args) {
         DistribuidoraFachada fachada = new DistribuidoraFachada();
         Estoque estoque = new Estoque();
-        Patio patio = new Patio(20); // Pátio com 20 vagas
+        Patio patio = new Patio(20);
 
-        // Renomeando para refletir a nova estrutura
+        // Instanciação das classes de UI
         TelaCliente telaCliente = new TelaCliente(fachada);
         TelaFuncionario telaFuncionario = new TelaFuncionario(fachada);
         TelaEstoque telaEstoque = new TelaEstoque(fachada, estoque);
         TelaControlePatio telaControlePatio = new TelaControlePatio(fachada, patio);
         TelaVendas telaVendas = new TelaVendas(fachada, estoque);
-        // A TelaAgendamento pode ser chamada de dentro de Vendas ou Pátio, se desejado
 
         Scanner scanner = new Scanner(System.in);
 
@@ -49,7 +48,8 @@ public class TelaPrincipal {
                         telaEstoque.exibirMenuEstoque();
                         break;
                     case 4:
-                        telaControlePatio.controlarPatio();
+                        // CORREÇÃO AQUI: O método agora se chama exibirMenuPatio()
+                        telaControlePatio.exibirMenuPatio();
                         break;
                     case 5:
                         telaVendas.exibirMenuVendas();

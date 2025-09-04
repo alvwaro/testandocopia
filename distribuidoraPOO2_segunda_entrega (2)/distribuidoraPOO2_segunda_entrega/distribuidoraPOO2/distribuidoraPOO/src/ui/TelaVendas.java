@@ -13,12 +13,10 @@ import java.util.Scanner;
 
 public class TelaVendas {
     private final DistribuidoraFachada fachada;
-    private final Estoque estoque;
     private final Scanner scanner;
 
     public TelaVendas(DistribuidoraFachada fachada, Estoque estoque) {
         this.fachada = fachada;
-        this.estoque = estoque;
         this.scanner = new Scanner(System.in);
     }
 
@@ -33,7 +31,7 @@ public class TelaVendas {
 
             try {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); // Limpa o buffer
+                scanner.nextLine();
 
                 switch (opcao) {
                     case 1:
@@ -55,17 +53,14 @@ public class TelaVendas {
         } while (opcao != 0);
     }
 
-// ui/TelaVendas.java
-
     private void realizarPedido() {
         try {
             System.out.print("\nDigite o CPF do Cliente: ");
             String cpf = scanner.nextLine();
             Cliente cliente = fachada.buscarClientePorCpf(cpf);
 
-            // Validação inicial para dar feedback rápido
             if (cliente == null) {
-                throw new ClienteNaoExisteException("Operação cancelada. Nenhum cliente foi encontrado com o CPF informado.");
+                throw new ClienteNaoExisteException("Operação cancelada. Cliente com CPF " + cpf + " não encontrado.");
             }
 
             System.out.println("Iniciando pedido para o cliente: " + cliente.getNome());
@@ -82,13 +77,13 @@ public class TelaVendas {
                 Produto produtoEmEstoque = fachada.buscarProdutoPorCodigo(codigoProduto);
 
                 if (produtoEmEstoque == null) {
-                    System.out.println("ALERTA: Produto com código '" + codigoProduto + "' não foi encontrado. Por favor, tente novamente.");
-                    continue; // Volta para o início do loop
+                    System.out.println("ALERTA: Produto com código '" + codigoProduto + "' não foi encontrado. Tente novamente.");
+                    continue;
                 }
 
-                System.out.print("Produto: " + produtoEmEstoque.getNome() + ". Digite a quantidade desejada: ");
+                System.out.print("Produto encontrado: " + produtoEmEstoque.getNome() + ". Digite a quantidade desejada: ");
                 int quantidade = scanner.nextInt();
-                scanner.nextLine(); // Limpa o buffer
+                scanner.nextLine();
 
                 produtosDesejados.add(new Produto(
                         produtoEmEstoque.getCodigo(),
@@ -105,27 +100,19 @@ public class TelaVendas {
                 return;
             }
 
-            // A chamada que pode lançar as exceções
-            fachada.criarPedido(cliente, produtosDesejados, estoque);
+            fachada.criarPedido(cliente, produtosDesejados);
 
+            // --- BLOCOS CATCH CORRIGIDOS E SEPARADOS ---
         } catch (InputMismatchException e) {
             System.out.println("\nERRO DE ENTRADA: A quantidade deve ser um número inteiro. Tente novamente.");
-            scanner.nextLine(); // Limpa o buffer para evitar loop infinito
-
-            // Tratamento específico para cliente não encontrado
+            scanner.nextLine();
         } catch (ClienteNaoExisteException e) {
             System.out.println("\nERRO DE VALIDAÇÃO: " + e.getMessage());
-
-            // Tratamento específico para argumentos inválidos (ex: lista de produtos vazia)
         } catch (IllegalArgumentException e) {
             System.out.println("\nERRO NOS DADOS DO PEDIDO: " + e.getMessage());
-
-            // Tratamento mais genérico para outros erros de execução, como estoque insuficiente
-        } catch (RuntimeException e) {
+        } catch (RuntimeException e) { // Captura outros erros de execução, como estoque insuficiente
             System.out.println("\nERRO NA LÓGICA DO PEDIDO: " + e.getMessage());
-
-            // Captura final para qualquer outro erro inesperado
-        } catch (Exception e) {
+        } catch (Exception e) { // Captura final para qualquer outro erro inesperado
             System.out.println("\nOcorreu um erro inesperado no sistema: " + e.getMessage());
         }
     }
@@ -144,7 +131,8 @@ public class TelaVendas {
             boolean temPendentes = false;
             for (Pedido p : cliente.getPedidos()) {
                 if (!"Pago".equalsIgnoreCase(p.getStatus())) {
-                    System.out.println(" -> Pedido Nº" + p.getNumero() + " | Valor: R$" + String.format("%.2f", p.getValorTotal()) + " | Status: " + p.getStatus());
+                    System.out.printf(" -> Pedido Nº%d | Valor: R$ %.2f | Status: %s%n",
+                            p.getNumero(), p.getValorTotal(), p.getStatus());
                     temPendentes = true;
                 }
             }
@@ -158,31 +146,33 @@ public class TelaVendas {
             int numPedido = scanner.nextInt();
             scanner.nextLine();
 
-            Pedido pedidoAPagar = null;
-            for (Pedido p : cliente.getPedidos()) {
-                if (p.getNumero() == numPedido) {
-                    pedidoAPagar = p;
-                    break;
-                }
-            }
+            Pedido pedidoAPagar = cliente.getPedidos().stream()
+                    .filter(p -> p.getNumero() == numPedido)
+                    .findFirst()
+                    .orElse(null);
 
             if (pedidoAPagar == null) {
                 System.out.println("Erro: Pedido com número " + numPedido + " não encontrado para este cliente.");
                 return;
             }
 
-            System.out.print("O total do pedido é R$" + String.format("%.2f", pedidoAPagar.getValorTotal()) + ". Digite o valor a ser pago: ");
+            System.out.printf("O total do pedido é R$ %.2f. Digite o valor a ser pago: ", pedidoAPagar.getValorTotal());
             double valorPago = scanner.nextDouble();
             scanner.nextLine();
 
-            fachada.pagarPedido(cliente, pedidoAPagar, valorPago, estoque);
+            fachada.pagarPedido(cliente, pedidoAPagar, valorPago);
             System.out.println("Pagamento do pedido Nº" + numPedido + " realizado com sucesso!");
 
+            // --- BLOCOS CATCH CORRIGIDOS E SEPARADOS ---
         } catch (InputMismatchException e) {
             System.out.println("\nErro de entrada: O número do pedido e o valor devem ser numéricos.");
             scanner.nextLine();
-        } catch (ClienteNaoExisteException | IllegalArgumentException | IllegalStateException e) {
+        } catch (ClienteNaoExisteException e) {
+            System.out.println("\nERRO: " + e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) { // Estes podem ficar juntos, pois não são subclasses um do outro
             System.out.println("\nErro ao processar o pagamento: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("\nOcorreu um erro inesperado: " + e.getMessage());
         }
     }
 }

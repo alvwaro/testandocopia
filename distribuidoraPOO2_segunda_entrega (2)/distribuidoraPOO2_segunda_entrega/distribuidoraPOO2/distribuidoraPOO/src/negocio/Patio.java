@@ -42,7 +42,6 @@ public class Patio  implements Serializable {
         this.filaEntrada = filaEntrada;
     }
 
-    //
     public ArrayList<Caminhao> getFilaSaida() {
         return filaSaida;
     }
@@ -82,14 +81,12 @@ public class Patio  implements Serializable {
             if (add) {
                 vagasDisponiveis--;
             }
-            return add; // garante retorno mesmo que add seja false
+            return add;
         } else {
             filaEntrada.add(caminhao);
             return false;
         }
     }
-
-
 
     protected boolean adicionarFilaSaida(Caminhao caminhao){
         if (caminhao == null){
@@ -97,7 +94,9 @@ public class Patio  implements Serializable {
         }
         boolean estavaNoPatio = caminhoesPatioLista.remove(caminhao);
         if(!estavaNoPatio){
-            return false;
+            // Se não estava no pátio, não pode ser adicionado à fila de saída.
+            // Lançar uma exceção pode ser mais informativo aqui.
+            throw new IllegalArgumentException("O caminhão com placa " + caminhao.getPlaca() + " não se encontra no pátio.");
         }
         filaSaida.add(caminhao);
         return true;
@@ -109,72 +108,43 @@ public class Patio  implements Serializable {
         }
         boolean removido = filaSaida.remove(caminhao);
         if (!removido) {
-            throw new IllegalArgumentException("O caminhão placa: " + caminhao.getPlaca() + " não está na fila");
+            throw new IllegalArgumentException("O caminhão placa: " + caminhao.getPlaca() + " não está na fila de saída.");
         }
-        if(removido){
-            vagasDisponiveis++;
-        }
+
+        vagasDisponiveis++; // Libera a vaga
+
+        // Se houver caminhões na fila de espera, o próximo entra
         if(!filaEntrada.isEmpty()){
             Caminhao proximo = filaEntrada.remove(0);
             caminhoesPatioLista.add(proximo);
             vagasDisponiveis--;
+            System.out.println("Caminhão da placa " + proximo.getPlaca() + " saiu da fila de espera e entrou no pátio.");
         }
         return true;
     }
-    public void listarCaminhoes(){
-        System.out.println("caminhoes no patio: ");
-        for(Caminhao caminhao : caminhoesPatioLista){
-            System.out.println("-" + caminhao);
-        }
-    }
 
-    /*metodo para listar os caminhoes do patio
-    public ArrayList<Caminhao> listarCaminhoesPatio(){
-        return new ArrayList<>(caminhoesPatioLista);
-    }
-
-    // ajeitar isso
-
-    public void listarCaminhoes(){
-        System.out.println("caminhoes no patio: ");
-        for(Caminhao caminhao : caminhoesPatioLista){
-            System.out.println("-" + caminhao);
-        }
-
-    }
-    //pra ver se a lista ta vazia eh na ui e essa eh p/ mostrar a lista de netrada
-    public ArrayList<Caminhao> listarFilaEntrada() {
-        return new ArrayList<>(filaEntrada); // retorna uma cópia da lista
-    }
-
-    public ArrayList<Caminhao> listarFilaSaida() {
-    return new ArrayList<>(filaSaida); // retorna uma cópia da lista
-    }
-
-
+    // **** MÉTODO CORRIGIDO E ATIVADO ****
     public void listarFilas(){
+        System.out.println("\n--- FILA DE ENTRADA DE CAMINHÕES ---");
         if (filaEntrada == null || filaEntrada.isEmpty()){
-            System.out.println("A fila de entrada do patio esta vazia.");
+            System.out.println("A fila de entrada do pátio está vazia.");
         }else{
-            System.out.println("FILA DE ENTRADA DE CAMINHOES: ");
             for(Caminhao caminhao : filaEntrada){
-                System.out.println("-" + caminhao);
+                System.out.println("-> " + caminhao.toString());
             }
         }
-        if(filaSaida == null || filaSaida.isEmpty()){
-            System.out.println("A fila de saida do patio esta vazia.");
-        }else{
-            System.out.println("FILA DE SAIDA DE CAMINHOES");
-            for(Caminhao caminhao : filaSaida){
-                System.out.println("-" + caminhao);
 
+        System.out.println("\n--- FILA DE SAÍDA DE CAMINHÕES ---");
+        if(filaSaida == null || filaSaida.isEmpty()){
+            System.out.println("A fila de saída do pátio está vazia.");
+        }else{
+            for(Caminhao caminhao : filaSaida){
+                System.out.println("-> " + caminhao.toString());
             }
         }
     }
-*/
+
     public ArrayList<Caminhao> getCaminhoesPatioLista() {
         return caminhoesPatioLista;
     }
-
-
 }

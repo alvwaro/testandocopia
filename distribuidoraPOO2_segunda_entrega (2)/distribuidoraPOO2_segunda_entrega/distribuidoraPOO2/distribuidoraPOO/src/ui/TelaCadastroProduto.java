@@ -11,12 +11,13 @@ public class TelaCadastroProduto {
 
     private final DistribuidoraFachada fachada;
     private final Scanner scanner;
-    private final Estoque estoque;
+    // O campo 'estoque' foi removido pois agora é gerenciado pela fachada.
 
     public TelaCadastroProduto(DistribuidoraFachada fachada, Estoque estoque) {
         this.fachada = fachada;
         this.scanner = new Scanner(System.in);
-        this.estoque = estoque;
+        // O parâmetro 'estoque' no construtor é mantido para compatibilidade
+        // com a TelaPrincipal, mas não é mais usado nesta classe.
     }
 
     public void cadastrarProduto() {
@@ -39,8 +40,12 @@ public class TelaCadastroProduto {
             scanner.nextLine();
 
             Produto produto = new Produto(codigo, nome, descricao, preco, quantidade);
-            fachada.cadastrarProduto(produto, estoque);
+
+            // CORREÇÃO AQUI: A chamada agora passa apenas um argumento.
+            fachada.cadastrarProduto(produto);
+
             System.out.println("Produto cadastrado com sucesso!");
+
         } catch (InputMismatchException e) {
             System.out.println("Erro: Preço ou Quantidade inválida. Por favor, insira um número.");
             scanner.nextLine();

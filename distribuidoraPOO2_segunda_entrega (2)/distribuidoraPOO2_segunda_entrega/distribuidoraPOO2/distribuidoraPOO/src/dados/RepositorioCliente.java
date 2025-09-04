@@ -58,19 +58,18 @@ public class RepositorioCliente {
 
     private void salvar() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            // Escreve o cabeçalho do CSV
-            writer.write("cpf,nome,idade,telefone,endereco,email,tipo\n");
-            // Itera sobre a lista e escreve cada cliente em uma nova linha
+            // Escreve o cabeçalho do CSV (com o novo campo)
+            writer.write("cpf,nome,idade,telefone,endereco,email,tipo,cadastrado\n");
             for (Cliente cliente : clientes) {
-                // Usar aspas para evitar problemas com vírgulas nos dados
-                String linha = String.format("\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\"",
+                String linha = String.format("\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%b",
                         cliente.getCpf(),
                         cliente.getNome(),
                         cliente.getIdade(),
                         cliente.getTelefone(),
                         cliente.getEndereco(),
                         cliente.getEmail(),
-                        cliente.getTipo()
+                        cliente.getTipo(),
+                        cliente.isCadastrado() // Salva o status de cadastrado
                 );
                 writer.write(linha);
                 writer.newLine();
@@ -83,18 +82,18 @@ public class RepositorioCliente {
     private void carregar() {
         File arquivo = new File(ARQUIVO_CSV);
         if (!arquivo.exists()) {
-            return; // Se o arquivo não existe, não há nada a carregar
+            return;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.clientes.clear(); // Limpa a lista atual para carregar do arquivo
+            this.clientes.clear();
             String linha;
             reader.readLine(); // Pula a linha do cabeçalho
 
             while ((linha = reader.readLine()) != null) {
+                // Remove as aspas e divide a linha
                 String[] dados = linha.replace("\"", "").split(",");
-                if (dados.length == 7) {
-                    // Extrai os dados das colunas
+                if (dados.length == 8) { // Agora espera 8 colunas
                     String cpf = dados[0];
                     String nome = dados[1];
                     int idade = Integer.parseInt(dados[2]);
@@ -102,9 +101,10 @@ public class RepositorioCliente {
                     String endereco = dados[4];
                     String email = dados[5];
                     String tipo = dados[6];
+                    boolean cadastrado = Boolean.parseBoolean(dados[7]); // Lê o status
 
-                    // Cria e adiciona o cliente à lista
                     Cliente cliente = new Cliente(nome, idade, cpf, telefone, endereco, email, tipo);
+                    cliente.setCadastrado(cadastrado); // Define o status lido do arquivo
                     this.clientes.add(cliente);
                 }
             }

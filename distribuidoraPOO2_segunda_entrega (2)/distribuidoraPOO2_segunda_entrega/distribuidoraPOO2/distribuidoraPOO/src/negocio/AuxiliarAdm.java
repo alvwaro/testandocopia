@@ -58,9 +58,9 @@ public class AuxiliarAdm extends Funcionario {
                 throw new CpfJaExistenteException("O CPF já está cadastrado.");
             }
         }
-            if(repFuncionario.cadastrar(motorista)){
-                motorista.setCadastrado(true);
-            }
+        if(repFuncionario.cadastrar(motorista)){
+            motorista.setCadastrado(true);
+        }
     }
     public void cadastrarCaminhao(Caminhao caminhao) {
         if(!loginCadastro.equals(this.login)){
@@ -91,7 +91,7 @@ public class AuxiliarAdm extends Funcionario {
 
 
     }
-    // funcionando
+
     public void cadastrarCliente(Cliente cliente) {
         if(!loginCadastro.equals(this.login)){
             throw new SecurityException("Apenas o administrador pode cadastrar novos clientes");
@@ -102,9 +102,11 @@ public class AuxiliarAdm extends Funcionario {
         if (repCliente.buscarPorCpf(cliente.getCpf()) != null) {
             throw new CpfJaExistenteException("Cliente já cadastrado");
         }
+
+        // CORREÇÃO: Define como cadastrado ANTES de salvar
+        cliente.setCadastrado(true);
         if (repCliente.cadastrar(cliente)) {
             System.out.println("Cliente cadastrado com sucesso!");
-            cliente.setCadastrado(true);
         }
     }
 
@@ -144,8 +146,7 @@ public class AuxiliarAdm extends Funcionario {
             System.out.println("o caminhao foi pra fila de espera de entrada no patio");
         }
     }
-    //funcionando
-    // primeiro tem que add na fila de saida e depois permitir a saida
+
     public void adicionarNaFilaSaida(Caminhao caminhao, Patio patio){
         if(!loginCadastro.equals(this.login)){
             throw new SecurityException("Apenas administradores com autorizacao podem permitir a saida de caminhoes");
@@ -158,14 +159,14 @@ public class AuxiliarAdm extends Funcionario {
         }
         patio.adicionarFilaSaida(caminhao);
     }
-    // funcionando
+
     public void permitirSaida(Caminhao caminhao, Patio patio){
         if(!loginCadastro.equals(this.login)){
             throw new SecurityException("Apenas administradores com autorizacao podem permitir a saida de caminhoes");
         }
         if (caminhao == null){
             throw new IllegalArgumentException("Caminhão inválido.");
-       }
+        }
         if(patio == null){
             throw new IllegalArgumentException("Patio inválido.");
         }

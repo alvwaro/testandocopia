@@ -1,2 +1,2 @@
-cpf,nome,idade,telefone,endereco,email,tipo
-"100","tuca",10,"100","100","100","oi"
+cpf,nome,idade,telefone,endereco,email,tipo,cadastrado
+"200","chamber",19,"200","rua","lindo","09",true

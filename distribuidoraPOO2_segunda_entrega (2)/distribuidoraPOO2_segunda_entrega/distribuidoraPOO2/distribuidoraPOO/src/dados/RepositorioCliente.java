@@ -25,16 +25,10 @@ public class RepositorioCliente {
         return null;
     }
 
-    public void listarTodos() {
-        if (this.clientes.isEmpty()) {
-            System.out.println("Não há clientes cadastrados.");
-            return;
-        }
-        System.out.println("Clientes: ");
-        for (Cliente c : this.clientes) {
-            System.out.println(c.getNome());
-        }
+    public ArrayList<Cliente> listarTodos() {
+        return new ArrayList<>(this.clientes);
     }
+
 
     public boolean remover(String cpf) {
         Cliente c = this.buscarPorCpf(cpf);
@@ -66,6 +60,8 @@ public class RepositorioCliente {
             oos.writeObject(this.clientes);
         }
     }
+
+
 
     @SuppressWarnings("unchecked")
     public void carregar(String caminhoArquivo) throws IOException, ClassNotFoundException {

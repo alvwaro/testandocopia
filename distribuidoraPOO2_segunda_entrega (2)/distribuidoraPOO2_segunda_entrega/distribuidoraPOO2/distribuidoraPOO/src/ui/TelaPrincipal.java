@@ -14,23 +14,25 @@ public class TelaPrincipal {
         Estoque estoque = new Estoque();
         Patio patio = new Patio(20); // Pátio com 20 vagas
 
-        TelaCadastroCliente telaCadastroCliente = new TelaCadastroCliente(fachada);
-        TelaCadastroFuncionario telaCadastroFuncionario = new TelaCadastroFuncionario(fachada);
-        TelaCadastroProduto telaCadastroProduto = new TelaCadastroProduto(fachada, estoque);
+        // Renomeando para refletir a nova estrutura
+        TelaCliente telaCliente = new TelaCliente(fachada);
+        TelaFuncionario telaFuncionario = new TelaFuncionario(fachada);
+        TelaEstoque telaEstoque = new TelaEstoque(fachada, estoque);
         TelaControlePatio telaControlePatio = new TelaControlePatio(fachada, patio);
-        TelaAgendamento telaAgendamento = new TelaAgendamento(fachada);
+        TelaVendas telaVendas = new TelaVendas(fachada, estoque);
+        // A TelaAgendamento pode ser chamada de dentro de Vendas ou Pátio, se desejado
 
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
             try {
-                System.out.println("\n== Menu Principal ==");
-                System.out.println("1. Cadastrar Cliente");
-                System.out.println("2. Cadastrar Funcionário");
-                System.out.println("3. Cadastrar Produto");
+                System.out.println("\n===== MENU PRINCIPAL DA DISTRIBUIDORA =====");
+                System.out.println("1. Gestão de Clientes");
+                System.out.println("2. Gestão de Funcionários");
+                System.out.println("3. Gestão de Estoque e Produtos");
                 System.out.println("4. Controle de Pátio");
-                System.out.println("5. Agendar Entrega");
-                System.out.println("0. Sair");
+                System.out.println("5. Vendas e Pedidos");
+                System.out.println("0. Sair do Sistema");
                 System.out.print("Escolha uma opção: ");
 
                 int opcao = scanner.nextInt();
@@ -38,28 +40,28 @@ public class TelaPrincipal {
 
                 switch (opcao) {
                     case 1:
-                        telaCadastroCliente.cadastrarCliente();
+                        telaCliente.exibirMenuCliente();
                         break;
                     case 2:
-                        telaCadastroFuncionario.cadastrarFuncionario();
+                        telaFuncionario.exibirMenuFuncionario();
                         break;
                     case 3:
-                        telaCadastroProduto.cadastrarProduto();
+                        telaEstoque.exibirMenuEstoque();
                         break;
                     case 4:
                         telaControlePatio.controlarPatio();
                         break;
                     case 5:
-                        telaAgendamento.agendarEntrega();
+                        telaVendas.exibirMenuVendas();
                         break;
                     case 0:
-                        System.out.println("Saindo...");
+                        System.out.println("Encerrando o sistema...");
                         return;
                     default:
-                        System.out.println("Opção inválida.");
+                        System.out.println("Opção inválida. Tente novamente.");
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Erro: Opção inválida. Por favor, insira um número.");
+                System.out.println("\nErro: Opção inválida. Por favor, insira um número correspondente ao menu.");
                 scanner.nextLine();
             }
         }

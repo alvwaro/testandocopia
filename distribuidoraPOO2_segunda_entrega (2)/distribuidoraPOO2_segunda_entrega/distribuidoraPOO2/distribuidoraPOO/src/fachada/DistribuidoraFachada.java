@@ -20,6 +20,10 @@ public class DistribuidoraFachada {
     AuxiliarAdm adm = new AuxiliarAdm("adm", 800.00, "Luicas", 35, "789549", "879985664",
             "Rua F", "licas@gmail.com", "adm2025", "1234", repositorioCliente, repositorioEstoque, repPatio);
 
+    public ArrayList<Cliente> getClientes() {
+        return this.repositorioCliente.listarTodos(); // Supondo que o repositório retorne a lista
+    }
+
     // CADASTROS
     public void cadastrarMotorista(Motorista motorista){
         adm.cadastrarMotorista(motorista);

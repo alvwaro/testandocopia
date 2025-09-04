@@ -1,4 +1,5 @@
 package negocio;
+
 import dados.*;
 import negocio.exceptions.CaminhaoNaoCadastradoException;
 import negocio.exceptions.CpfJaExistenteException;
@@ -10,7 +11,6 @@ import negocio.exceptions.VagaInsuficienteException;
 public class AuxiliarAdm extends Funcionario {
     private String login;
     private ArrayList<Cliente> clientesLista;
-    //private ArrayList<Caminhao> caminhoesLista;
     private ArrayList<Produto> produtosLista;
 
     private RepositorioCaminhao repCaminhao = new RepositorioCaminhao();
@@ -18,9 +18,9 @@ public class AuxiliarAdm extends Funcionario {
     private RepositorioFuncionario repFuncionario = new RepositorioFuncionario();
     private RepositorioPatio repPatio = new RepositorioPatio();
     private RepositorioCliente repCliente;
-    private RepositorioEstoque repositorioEstoque;
+    // O campo 'repositorioEstoque' foi removido para evitar confusão,
+    // a instância de 'repEstoque' já é criada acima.
     private static final String loginCadastro = "adm2025";
-    private Produto produto;
 
     public AuxiliarAdm(String cargo, double salario, String nome, int idade, String cpf, String telefone, String endereco, String email, String login, String matricula, RepositorioCliente repCliente, RepositorioEstoque repEstoque, RepositorioPatio repPatio){
         super(cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula);
@@ -103,24 +103,32 @@ public class AuxiliarAdm extends Funcionario {
             throw new CpfJaExistenteException("Cliente já cadastrado");
         }
 
-        // CORREÇÃO: Define como cadastrado ANTES de salvar
         cliente.setCadastrado(true);
         if (repCliente.cadastrar(cliente)) {
             System.out.println("Cliente cadastrado com sucesso!");
         }
     }
 
+    /**
+     * CORREÇÃO APLICADA AQUI.
+     * Este método agora segue a nova arquitetura.
+     */
     public void cadastrarProduto(Produto produto, Estoque estoque){
         if(!loginCadastro.equals(this.login)){
-            throw new SecurityException("Apenas administrades com permissao podem cadastrar um produto");
+            throw new SecurityException("Apenas administradores com permissao podem cadastrar um produto");
         }
-        if (produto== null){
-            throw new IllegalArgumentException("Produto inváido");
+        if (produto == null){
+            throw new IllegalArgumentException("Produto inválido");
         }
-        if(repEstoque.cadastrarProduto(produto, estoque)){
-            System.out.println("produto cadastrado");
-            produto.setCadastrado(true);
-        }
+
+        // 1. Adiciona o produto à lista de estoque em memória (lógica de negócio)
+        estoque.cadastrarProduto(produto);
+
+        // 2. Persiste a lista completa e atualizada no arquivo CSV (lógica de dados)
+        repEstoque.salvar(estoque.getProdutos());
+
+        produto.setCadastrado(true);
+        System.out.println("Produto cadastrado e salvo no estoque.");
     }
 
     public void permitirEntrada(Caminhao caminhao, Patio patio) throws VagaInsuficienteException {
@@ -189,5 +197,4 @@ public class AuxiliarAdm extends Funcionario {
     public void ponto(String matricula){
         baterPonto(matricula);
     }
-
 }

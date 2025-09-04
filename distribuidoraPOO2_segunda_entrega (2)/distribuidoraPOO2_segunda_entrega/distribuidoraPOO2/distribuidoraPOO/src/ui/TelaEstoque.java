@@ -3,18 +3,16 @@ package ui;
 import fachada.DistribuidoraFachada;
 import negocio.Estoque;
 import negocio.Produto;
-
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class TelaEstoque {
     private final DistribuidoraFachada fachada;
-    private final Estoque estoque;
     private final Scanner scanner;
 
     public TelaEstoque(DistribuidoraFachada fachada, Estoque estoque) {
         this.fachada = fachada;
-        this.estoque = estoque;
         this.scanner = new Scanner(System.in);
     }
 
@@ -39,7 +37,7 @@ public class TelaEstoque {
                         cadastrarProduto();
                         break;
                     case 2:
-                        fachada.listarProdutos();
+                        listarTodosOsProdutos(); // Chama o método corrigido
                         break;
                     case 3:
                         buscarProduto();
@@ -63,6 +61,24 @@ public class TelaEstoque {
         } while (opcao != 0);
     }
 
+    // **** MÉTODO CORRIGIDO PARA LISTAR PRODUTOS ****
+    private void listarTodosOsProdutos() {
+        System.out.println("\n--- Lista Completa de Produtos no Estoque ---");
+        ArrayList<Produto> produtos = fachada.listarProdutos(); // Busca a lista da fachada
+
+        if (produtos == null || produtos.isEmpty()) {
+            System.out.println("Nenhum produto cadastrado no estoque.");
+            return;
+        }
+
+        System.out.println("----------------------------------------------------------------");
+        for (Produto p : produtos) {
+            System.out.printf("Nome: %-20s | Código: %-10s | Preço: R$ %-8.2f | Qtd: %d%n",
+                    p.getNome(), p.getCodigo(), p.getPreco(), p.getQuantidade());
+        }
+        System.out.println("----------------------------------------------------------------");
+    }
+
     private void cadastrarProduto() {
         try {
             System.out.println("\n== Cadastro de Produto ==");
@@ -79,11 +95,13 @@ public class TelaEstoque {
             scanner.nextLine();
 
             Produto produto = new Produto(codigo, nome, descricao, preco, quantidade);
-            fachada.cadastrarProduto(produto, estoque);
+            fachada.cadastrarProduto(produto); // A fachada agora gerencia o estoque
+            System.out.println("Produto cadastrado com sucesso!");
+
         } catch (InputMismatchException e) {
             System.out.println("\nErro: Preço e quantidade devem ser valores numéricos.");
             scanner.nextLine();
-        } catch (SecurityException | IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println("\nErro ao cadastrar produto: " + e.getMessage());
         }
     }
@@ -94,7 +112,7 @@ public class TelaEstoque {
         Produto p = fachada.buscarProdutoPorCodigo(codigo);
         if (p != null) {
             System.out.println("Produto encontrado:");
-            System.out.println("Nome: " + p.getNome() + " | Preço: R$" + p.getPreco() + " | Qtd: " + p.getQuantidade());
+            System.out.println("Nome: " + p.getNome() + " | Preço: R$" + String.format("%.2f", p.getPreco()) + " | Qtd: " + p.getQuantidade());
         } else {
             System.out.println("Produto com código " + codigo + " não encontrado.");
         }

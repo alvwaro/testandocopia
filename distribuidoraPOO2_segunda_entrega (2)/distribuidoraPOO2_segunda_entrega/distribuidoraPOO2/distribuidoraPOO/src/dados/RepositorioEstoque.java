@@ -1,73 +1,28 @@
 package dados;
 
-import negocio.Estoque;
 import negocio.Produto;
 import java.io.*;
 import java.util.ArrayList;
 
 public class RepositorioEstoque {
-    private ArrayList<Produto> produtos = new ArrayList<>();
+
     private static final String ARQUIVO_CSV = "produtos.csv";
 
     public RepositorioEstoque() {
-        carregar(); // Carrega os produtos do CSV na inicialização
+        // O construtor agora está vazio. O carregamento é feito na fachada.
     }
 
-    public boolean cadastrarProduto(Produto produto, Estoque estoque) {
-        if (this.produtos.add(produto)) {
-            estoque.cadastrarProduto(produto);
-            salvar();
-            return true;
-        }
-        return false;
-    }
-
-    public Produto buscarPorCodigo(String codigo) {
-        for (Produto p : this.produtos) {
-            if (p.getCodigo().equals(codigo)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<Produto> listarTodos() {
-        return new ArrayList<>(this.produtos);
-    }
-
-    public boolean remover(String codigo) {
-        Produto p = this.buscarPorCodigo(codigo);
-        if (p != null) {
-            this.produtos.remove(p);
-            salvar();
-            return true;
-        }
-        return false;
-    }
-
-    public boolean atualizar(Produto produto) {
-        for (int i = 0; i < this.produtos.size(); i++) {
-            if (this.produtos.get(i).getCodigo().equals(produto.getCodigo())) {
-                this.produtos.set(i, produto);
-                salvar();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // --- MÉTODOS DE PERSISTÊNCIA EM CSV ---
-
-    private void salvar() {
+    public void salvar(ArrayList<Produto> produtos) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("codigo,nome,descricao,preco,quantidade\n");
+            writer.write("codigo,nome,descricao,preco,quantidade,cadastrado\n");
             for (Produto produto : produtos) {
-                String linha = String.format("\"%s\",\"%s\",\"%s\",%.2f,%d",
+                String linha = String.format("\"%s\",\"%s\",\"%s\",%.2f,%d,%b",
                         produto.getCodigo(),
                         produto.getNome(),
                         produto.getDescricao(),
                         produto.getPreco(),
-                        produto.getQuantidade()
+                        produto.getQuantidade(),
+                        produto.isCadastrado()
                 );
                 writer.write(linha);
                 writer.newLine();
@@ -77,29 +32,35 @@ public class RepositorioEstoque {
         }
     }
 
-    private void carregar() {
+    public ArrayList<Produto> carregar() {
+        ArrayList<Produto> produtosCarregados = new ArrayList<>();
         File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) return;
+        if (!arquivo.exists()) {
+            return produtosCarregados; // Retorna lista vazia se o arquivo não existe
+        }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.produtos.clear();
-            reader.readLine();
+            reader.readLine(); // Pula o cabeçalho
 
             String linha;
             while ((linha = reader.readLine()) != null) {
                 String[] dados = linha.replace("\"", "").split(",");
-                if (dados.length == 5) {
+                if (dados.length == 6) {
                     String codigo = dados[0];
                     String nome = dados[1];
                     String descricao = dados[2];
-                    double preco = Double.parseDouble(dados[3].replace(",", ".")); // Lida com formato de moeda
+                    double preco = Double.parseDouble(dados[3].replace(",", "."));
                     int quantidade = Integer.parseInt(dados[4]);
+                    boolean cadastrado = Boolean.parseBoolean(dados[5]);
 
-                    this.produtos.add(new Produto(codigo, nome, descricao, preco, quantidade));
+                    Produto produto = new Produto(codigo, nome, descricao, preco, quantidade);
+                    produto.setCadastrado(cadastrado);
+                    produtosCarregados.add(produto);
                 }
             }
         } catch (IOException | NumberFormatException e) {
             System.err.println("Erro ao carregar produtos do arquivo CSV: " + e.getMessage());
         }
+        return produtosCarregados;
     }
 }

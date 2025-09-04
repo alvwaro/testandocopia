@@ -6,6 +6,7 @@ import negocio.Caminhao;
 import negocio.Pedido;
 
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class TelaAgendamento {
@@ -19,21 +20,30 @@ public class TelaAgendamento {
     }
 
     public void agendarEntrega() {
-        System.out.println("== Agendar Entrega ==");
-        System.out.print("Número do Pedido: ");
-        int numeroPedido = scanner.nextInt();
-        scanner.nextLine();
+        try {
+            System.out.println("== Agendar Entrega ==");
+            System.out.print("Número do Pedido: ");
+            int numeroPedido = scanner.nextInt();
+            scanner.nextLine();
 
-        System.out.print("Placa do Caminhão: ");
-        String placaCaminhao = scanner.nextLine();
+            System.out.print("Placa do Caminhão: ");
+            String placaCaminhao = scanner.nextLine();
 
-        // Criar objetos Pedido e Caminhao (simplificado)
-        Pedido pedido = new Pedido();
-        pedido.setNumero(numeroPedido);
+            // Criar objetos Pedido e Caminhao (simplificado)
+            Pedido pedido = new Pedido();
+            pedido.setNumero(numeroPedido);
 
-        Caminhao caminhao = new Caminhao(placaCaminhao);
+            Caminhao caminhao = new Caminhao(placaCaminhao);
 
-        Agendamento agendamento = new Agendamento(pedido, caminhao, new Date());
-        System.out.println("Agendamento realizado com sucesso!");
+            Agendamento agendamento = new Agendamento(pedido, caminhao, new Date());
+            // Supondo que haja um método na fachada para agendamento
+            // fachada.agendarEntrega(agendamento);
+            System.out.println("Agendamento realizado com sucesso!");
+        } catch (InputMismatchException e) {
+            System.out.println("Erro: Por favor, insira um número válido para o pedido.");
+            scanner.nextLine(); // Limpa o buffer do scanner
+        } catch (Exception e) {
+            System.out.println("Ocorreu um erro ao agendar a entrega: " + e.getMessage());
+        }
     }
 }

@@ -64,7 +64,8 @@ public class RepositorioCliente implements IRepositorioCliente {
 
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        String cabecalho = "cpf,nome,idade,telefone,endereco,email,tipo,cadastrado";
+        // CORREÇÃO: Adicionado o campo 'pedidos' ao cabeçalho.
+        String cabecalho = "cpf,nome,idade,telefone,endereco,email,tipo,cadastrado,pedidos";
 
         for (Cliente cliente : clientes) {
             // Usa o Mapper para a conversão
@@ -84,6 +85,7 @@ public class RepositorioCliente implements IRepositorioCliente {
                 this.clientes.add(cliente);
             } catch (Exception e) {
                 System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
+                e.printStackTrace(); // Ajuda a depurar
             }
         }
     }

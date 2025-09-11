@@ -119,9 +119,11 @@ public class TelaControlePatio {
         if (todos.isEmpty()) {
             System.out.println("Nenhum caminhão cadastrado no sistema.");
         } else {
+            System.out.println("----------------------------------------------------------------");
             for (Caminhao c : todos) {
                 System.out.println(c.toString());
             }
+            System.out.println("----------------------------------------------------------------");
         }
     }
 }

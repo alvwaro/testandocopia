@@ -94,7 +94,10 @@ public class DistribuidoraFachada {
 
     // --- DEMAIS MÉTODOS ---
     public ArrayList<Cliente> getClientes() { return this.repositorioCliente.listarTodos(); }
-    public void cadastrarCliente(Cliente cliente) { this.repositorioCliente.cadastrar(cliente); }
+    public void cadastrarCliente(Cliente cliente) {
+        cliente.setCadastrado(true);
+        this.repositorioCliente.cadastrar(cliente);
+    }
     public Cliente buscarClientePorCpf(String cpf) { return this.repositorioCliente.buscarPorCpf(cpf); }
     public boolean removerCliente(String cpf) { return this.repositorioCliente.remover(cpf); }
     public void cadastrarProduto(Produto produto, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.estoque.cadastrarProduto(produto); this.repositorioEstoque.salvar(this.estoque.getProdutos());}
@@ -119,11 +122,18 @@ public class DistribuidoraFachada {
         Pedido pedido = cliente.realizarPedido(produtosDesejados, this.estoque);
         System.out.println("Gerando nota fiscal...");
         notaFiscal.gerarNotaFiscal(pedido.getProdutos(), pedido);
+
+        // CORREÇÃO: Salva o estado do cliente (com o novo pedido) no repositório.
+        this.repositorioCliente.atualizar(cliente);
+
         return pedido;
     }
     public void pagarPedido(Cliente cliente, Pedido pedido, double valorPago) {
         cliente.realizarPagamento(pedido, valorPago, this.estoque);
         this.repositorioEstoque.salvar(this.estoque.getProdutos());
+
+        // CORREÇÃO: Salva o estado do cliente (com o pedido pago) no repositório.
+        this.repositorioCliente.atualizar(cliente);
     }
     public void cadastrarCaminhao(Caminhao caminhao, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.repositorioCaminhao.cadastrar(caminhao); }
     public ArrayList<Caminhao> getTodosCaminhoes() { return this.repositorioCaminhao.listarTodos(); }

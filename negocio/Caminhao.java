@@ -45,11 +45,8 @@ public class Caminhao  implements Serializable {
 
     @Override
     public String toString() {
-        return "Caminhao{" +
-                "placa='" + placa + '\'' +
-                ", capacidade=" + capacidade +
-                ", status='" + status + '\'' +
-                '}';
+        return String.format("Placa: %s | Capacidade: %d toneladas | Status: %s",
+                placa, capacidade, status);
     }
 
     @Override

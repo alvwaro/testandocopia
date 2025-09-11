@@ -1,5 +1,6 @@
 package negocio;
 
+import negocio.exceptions.EstoqueInsuficienteException;
 import negocio.exceptions.ProdutoNaoEncontradoException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ public class Estoque implements Serializable {
         if (consultarProduto(produto.getCodigo()) == null) {
             this.produtos.add(produto);
         } else {
+            // Lançar exceção se o produto já existir, para evitar duplicatas silenciosas.
+            // throw new ProdutoJaExistenteException("Produto com código " + produto.getCodigo() + " já existe.");
         }
     }
 
@@ -50,24 +53,33 @@ public class Estoque implements Serializable {
         return new ArrayList<>(this.produtos); // Retorna uma cópia da lista
     }
 
-    public void atualizarEstoquePedido(Pedido pedido) {
-        if (pedido == null || pedido.getProdutos() == null) {
-            throw new IllegalArgumentException("Pedido ou lista de produtos inválidos.");
-        }
-        if (!"Pago".equalsIgnoreCase(pedido.getStatus())) {
-            throw new RuntimeException("Pedido não pode ser processado: ainda não foi pago.");
+    /**
+     * NOVO MÉTODO CENTRALIZADO PARA DAR BAIXA NO ESTOQUE.
+     * Este método é responsável por diminuir a quantidade de produtos do estoque
+     * com base nos itens de um pedido.
+     *
+     * @param produtosDoPedido A lista de produtos contida no pedido a ser processado.
+     * @throws ProdutoNaoEncontradoException Se um produto do pedido não existir no estoque.
+     * @throws EstoqueInsuficienteException Se a quantidade de um produto no pedido for maior que a disponível no estoque.
+     */
+    public void darBaixaEstoque(ArrayList<Produto> produtosDoPedido) {
+        if (produtosDoPedido == null || produtosDoPedido.isEmpty()) {
+            throw new IllegalArgumentException("A lista de produtos do pedido não pode ser vazia.");
         }
 
-        for (Produto produtoPedido : pedido.getProdutos()) {
-            Produto estoqueProduto = consultarProduto(produtoPedido.getCodigo());
-            if (estoqueProduto == null) {
-                throw new ProdutoNaoEncontradoException("Produto " + produtoPedido.getNome() + " não encontrado no estoque.");
+        for (Produto produtoPedido : produtosDoPedido) {
+            Produto produtoEstoque = consultarProduto(produtoPedido.getCodigo());
+
+            if (produtoEstoque == null) {
+                throw new ProdutoNaoEncontradoException("Produto " + produtoPedido.getNome() + " (cód: " + produtoPedido.getCodigo() + ") não encontrado no estoque.");
             }
 
-            if (estoqueProduto.getQuantidade() < produtoPedido.getQuantidade()) {
-                throw new RuntimeException("Estoque insuficiente para o produto: " + produtoPedido.getNome());
+            if (produtoEstoque.getQuantidade() < produtoPedido.getQuantidade()) {
+                throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + produtoPedido.getNome() + ". Disponível: " + produtoEstoque.getQuantidade() + ", Pedido: " + produtoPedido.getQuantidade());
             }
-            estoqueProduto.setQuantidade(estoqueProduto.getQuantidade() - produtoPedido.getQuantidade());
+
+            // Diminui a quantidade do produto no estoque
+            produtoEstoque.setQuantidade(produtoEstoque.getQuantidade() - produtoPedido.getQuantidade());
         }
     }
 }

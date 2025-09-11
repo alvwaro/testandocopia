@@ -2,14 +2,16 @@ package dados;
 
 import negocio.Funcionario;
 import negocio.Motorista;
-import java.io.*;
+import java.io.File; // Apenas para a verificação de existência, se desejar
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class RepositorioFuncionario {
     private ArrayList<Funcionario> funcionarios = new ArrayList<>();
-    private static final String ARQUIVO_CSV = "funcionarios.csv";
+    private final PersistenciaCSV persistencia = new PersistenciaCSV();
+    private static final String NOME_ARQUIVO = "funcionarios.csv";
 
     public RepositorioFuncionario() {
         carregar();
@@ -59,42 +61,32 @@ public class RepositorioFuncionario {
 
 
     private void salvar() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("tipo,matricula,nome,cpf,idade,telefone,endereco,email,cargo,salario,cnh,ultimaEntrada,ultimaSaida\n");
+        List<String> linhas = new ArrayList<>();
+        linhas.add("tipo,matricula,nome,cpf,idade,telefone,endereco,email,cargo,salario,cnh,ultimaEntrada,ultimaSaida");
 
-            for (Funcionario func : funcionarios) {
-                String tipo = (func instanceof Motorista) ? "Motorista" : "Funcionario";
-                String cnh = (func instanceof Motorista) ? ((Motorista) func).getCNH() : "N/A";
-                String ultimaEntradaStr = func.getUltimaEntrada() != null ? func.getUltimaEntrada().toString() : "null";
-                String ultimaSaidaStr = func.getUltimaSaida() != null ? func.getUltimaSaida().toString() : "null";
+        for (Funcionario func : funcionarios) {
+            String tipo = (func instanceof Motorista) ? "Motorista" : "Funcionario";
+            String cnh = (func instanceof Motorista) ? ((Motorista) func).getCNH() : "N/A";
+            String ultimaEntradaStr = func.getUltimaEntrada() != null ? func.getUltimaEntrada().toString() : "null";
+            String ultimaSaidaStr = func.getUltimaSaida() != null ? func.getUltimaSaida().toString() : "null";
 
-                String linha = String.format(Locale.US, "\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%.2f,\"%s\",\"%s\",\"%s\"",
-                        tipo, func.getMatricula(), func.getNome(), func.getCpf(), func.getIdade(),
-                        func.getTelefone(), func.getEndereco(), func.getEmail(), func.getCargo(),
-                        func.getSalario(), cnh, ultimaEntradaStr, ultimaSaidaStr
-                );
-                writer.write(linha);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("ERRO CRÍTICO AO SALVAR FUNCIONÁRIOS: " + e.getMessage());
+            String linha = String.format(Locale.US, "\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%.2f,\"%s\",\"%s\",\"%s\"",
+                    tipo, func.getMatricula(), func.getNome(), func.getCpf(), func.getIdade(),
+                    func.getTelefone(), func.getEndereco(), func.getEmail(), func.getCargo(),
+                    func.getSalario(), cnh, ultimaEntradaStr, ultimaSaidaStr
+            );
+            linhas.add(linha);
         }
+        persistencia.salvar(NOME_ARQUIVO, linhas);
     }
 
     private void carregar() {
-        File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) {
-            return;
-        }
+        this.funcionarios.clear();
+        List<String> linhas = persistencia.carregar(NOME_ARQUIVO);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.funcionarios.clear();
-            reader.readLine();
-
-            String linha;
-            while ((linha = reader.readLine()) != null) {
+        for (String linha : linhas) {
+            try {
                 String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-
                 for (int i = 0; i < dados.length; i++) {
                     if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
                         dados[i] = dados[i].substring(1, dados[i].length() - 1);
@@ -129,12 +121,11 @@ public class RepositorioFuncionario {
                     if (!"null".equals(ultimaSaidaStr)) {
                         funcionario.setUltimaSaida(LocalDateTime.parse(ultimaSaidaStr));
                     }
-
                     this.funcionarios.add(funcionario);
                 }
+            } catch (Exception e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }
-        } catch (IOException | NumberFormatException e) {
-            System.err.println("ERRO AO CARREGAR FUNCIONÁRIOS: " + e.getMessage());
         }
     }
 }

@@ -1,0 +1,2 @@
+tipo,matricula,nome,cpf,idade,telefone,endereco,email,cargo,salario,cnh,ultimaEntrada,ultimaSaida
+"Funcionario","1234","Lucas","12345678901",35,"879985664","Rua F","licas@gmail.com","adm",800.00,"N/A","null","null"

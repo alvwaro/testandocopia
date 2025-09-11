@@ -1,18 +1,16 @@
 package dados;
 
-import java.io.*;
+import negocio.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import negocio.Agendamento;
-import negocio.Caminhao;
-import negocio.Pedido;
-import negocio.StatusAgendamento;
+import java.util.List;
 
 public class RepositorioAgendamento {
-    private ArrayList<Agendamento> agendamentos = new ArrayList();
-    private static final String ARQUIVO_CSV = "agendamentos.csv";
+    private ArrayList<Agendamento> agendamentos = new ArrayList<>();
+    private final PersistenciaCSV persistencia = new PersistenciaCSV();
+    private static final String NOME_ARQUIVO = "agendamentos.csv";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     public RepositorioAgendamento() {
@@ -31,23 +29,21 @@ public class RepositorioAgendamento {
                 return a;
             }
         }
-
         return null;
     }
 
     public ArrayList<Agendamento> listarTodos() {
-        return new ArrayList(this.agendamentos);
+        return new ArrayList<>(this.agendamentos);
     }
 
     public boolean atualizar(Agendamento agendamento) {
         for(int i = 0; i < this.agendamentos.size(); ++i) {
-            if (((Agendamento)this.agendamentos.get(i)).getPedido().getNumero() == agendamento.getPedido().getNumero()) {
+            if (this.agendamentos.get(i).getPedido().getNumero() == agendamento.getPedido().getNumero()) {
                 this.agendamentos.set(i, agendamento);
                 salvar();
                 return true;
             }
         }
-
         return false;
     }
 
@@ -64,34 +60,34 @@ public class RepositorioAgendamento {
 
 
     private void salvar() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("numeroPedido,placaCaminhao,dataHoraPrevista,status\n");
-            for (Agendamento agendamento : agendamentos) {
-                String linha = String.format("%d,\"%s\",\"%s\",%s",
-                        agendamento.getPedido().getNumero(),
-                        agendamento.getCaminhao().getPlaca(),
-                        DATE_FORMAT.format(agendamento.getDataHoraPrevista()),
-                        agendamento.getStatus().name()
-                );
-                writer.write(linha);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Erro ao salvar agendamentos no arquivo CSV: " + e.getMessage());
+        List<String> linhas = new ArrayList<>();
+        linhas.add("numeroPedido,placaCaminhao,dataHoraPrevista,status");
+
+        for (Agendamento agendamento : agendamentos) {
+            String linha = String.format("%d,\"%s\",\"%s\",%s",
+                    agendamento.getPedido().getNumero(),
+                    agendamento.getCaminhao().getPlaca(),
+                    DATE_FORMAT.format(agendamento.getDataHoraPrevista()),
+                    agendamento.getStatus().name()
+            );
+            linhas.add(linha);
         }
+        persistencia.salvar(NOME_ARQUIVO, linhas);
     }
 
     private void carregar() {
-        File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) return;
+        this.agendamentos.clear();
+        List<String> linhas = persistencia.carregar(NOME_ARQUIVO);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.agendamentos.clear();
-            reader.readLine(); // Pula cabeçalho
+        for (String linha : linhas) {
+            try {
+                String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                for (int i = 0; i < dados.length; i++) {
+                    if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
+                        dados[i] = dados[i].substring(1, dados[i].length() - 1);
+                    }
+                }
 
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                String[] dados = linha.replace("\"", "").split(",");
                 if (dados.length == 4) {
                     int numeroPedido = Integer.parseInt(dados[0]);
                     String placaCaminhao = dados[1];
@@ -106,9 +102,9 @@ public class RepositorioAgendamento {
                     agendamento.setStatus(status);
                     this.agendamentos.add(agendamento);
                 }
+            } catch (ParseException | NumberFormatException e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }
-        } catch (IOException | NumberFormatException | ParseException e) {
-            System.err.println("Erro ao carregar agendamentos do arquivo CSV: " + e.getMessage());
         }
     }
 }

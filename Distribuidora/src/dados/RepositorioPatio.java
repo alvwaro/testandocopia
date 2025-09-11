@@ -1,15 +1,14 @@
 package dados;
 
-import java.io.*;
-import negocio.*;
-
+import negocio.Caminhao;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RepositorioPatio {
 
-    private ArrayList<Caminhao> caminhoesPatio = new ArrayList();
-    private static final String ARQUIVO_CSV = "patio.csv";
+    private ArrayList<Caminhao> caminhoesPatio = new ArrayList<>();
+    private final PersistenciaCSV persistencia = new PersistenciaCSV();
+    private static final String NOME_ARQUIVO = "patio.csv";
 
     public RepositorioPatio() {
         carregar();
@@ -22,6 +21,7 @@ public class RepositorioPatio {
         }
         return false;
     }
+
     public Caminhao buscarPorPlaca(String placa) {
         for(Caminhao c : this.caminhoesPatio) {
             if (c.getPlaca().equals(placa)) {
@@ -30,46 +30,47 @@ public class RepositorioPatio {
         }
         return null;
     }
+
     public void listarTodos() {
         if (this.caminhoesPatio.isEmpty()) {
             System.out.println("Não há caminhoes cadastrados no patio.");
             return;
         }
-        System.out.println("Caminhoes: ");
+        System.out.println("Caminhoes no pátio: ");
         for (Caminhao c : this.caminhoesPatio) {
             System.out.println(c.getPlaca());
         }
     }
 
     private void salvar() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("placa,capacidade,status,cadastrado\n");
-            for (Caminhao caminhao : caminhoesPatio) {
-                String linha = String.format("\"%s\",%d,\"%s\",%b",
-                        caminhao.getPlaca(),
-                        caminhao.getCapacidade(),
-                        caminhao.getStatus(),
-                        caminhao.getCadastrado()
-                );
-                writer.write(linha);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Erro ao salvar o pátio no arquivo CSV: " + e.getMessage());
+        List<String> linhas = new ArrayList<>();
+        linhas.add("placa,capacidade,status,cadastrado");
+
+        for (Caminhao caminhao : caminhoesPatio) {
+            String linha = String.format("\"%s\",%d,\"%s\",%b",
+                    caminhao.getPlaca(),
+                    caminhao.getCapacidade(),
+                    caminhao.getStatus(),
+                    caminhao.getCadastrado()
+            );
+            linhas.add(linha);
         }
+        persistencia.salvar(NOME_ARQUIVO, linhas);
     }
 
     private void carregar() {
-        File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) return;
+        this.caminhoesPatio.clear();
+        List<String> linhas = persistencia.carregar(NOME_ARQUIVO);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.caminhoesPatio.clear();
-            reader.readLine(); // Pula cabeçalho
+        for (String linha : linhas) {
+            try {
+                String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                for (int i = 0; i < dados.length; i++) {
+                    if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
+                        dados[i] = dados[i].substring(1, dados[i].length() - 1);
+                    }
+                }
 
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                String[] dados = linha.replace("\"", "").split(",");
                 if (dados.length == 4) {
                     String placa = dados[0];
                     int capacidade = Integer.parseInt(dados[1]);
@@ -80,9 +81,9 @@ public class RepositorioPatio {
                     caminhao.setCadastrado(cadastrado);
                     this.caminhoesPatio.add(caminhao);
                 }
+            } catch (Exception e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }
-        } catch (IOException | NumberFormatException e) {
-            System.err.println("Erro ao carregar o pátio do arquivo CSV: " + e.getMessage());
         }
     }
 }

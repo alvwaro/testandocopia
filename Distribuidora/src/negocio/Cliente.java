@@ -107,13 +107,12 @@ public class Cliente extends Pessoa  implements Serializable {
             throw new IllegalArgumentException(
                     "Valor pago insuficiente. Total do pedido: R$ " + pedido.getValorTotal());
         }
-        System.out.println("pagando...");
-        venda.finalizarPedido(pedido);
 
-        for (Produto produtoPedido : pedido.getProdutos()) {
-            Produto produtoEstoque = estoque.consultarProduto(produtoPedido.getCodigo());
-            produtoEstoque.setQuantidade(produtoEstoque.getQuantidade() - produtoPedido.getQuantidade());
-        }
+        System.out.println("pagando...");
+
+        estoque.darBaixaEstoque(pedido.getProdutos());
+
+        venda.finalizarPedido(pedido);
     }
 
 

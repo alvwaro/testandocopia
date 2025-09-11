@@ -1,12 +1,14 @@
 package dados;
 
 import negocio.Caminhao;
-import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RepositorioCaminhao {
     private ArrayList<Caminhao> caminhoes = new ArrayList<>();
-    private static final String ARQUIVO_CSV = "caminhoes.csv";
+    private final PersistenciaCSV persistencia = new PersistenciaCSV();
+    private static final String NOME_ARQUIVO = "caminhoes.csv";
+
 
     public RepositorioCaminhao() {
         carregar();
@@ -46,34 +48,34 @@ public class RepositorioCaminhao {
 
 
     private void salvar() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("placa,capacidade,status,cadastrado\n");
-            for (Caminhao caminhao : caminhoes) {
-                String linha = String.format("\"%s\",%d,\"%s\",%b",
-                        caminhao.getPlaca(),
-                        caminhao.getCapacidade(),
-                        caminhao.getStatus(),
-                        caminhao.getCadastrado()
-                );
-                writer.write(linha);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Erro ao salvar caminhões no arquivo CSV: " + e.getMessage());
+        List<String> linhas = new ArrayList<>();
+        linhas.add("placa,capacidade,status,cadastrado");
+
+        for (Caminhao caminhao : caminhoes) {
+            String linha = String.format("\"%s\",%d,\"%s\",%b",
+                    caminhao.getPlaca(),
+                    caminhao.getCapacidade(),
+                    caminhao.getStatus(),
+                    caminhao.getCadastrado()
+            );
+            linhas.add(linha);
         }
+        persistencia.salvar(NOME_ARQUIVO, linhas);
     }
 
     private void carregar() {
-        File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) return;
+        this.caminhoes.clear();
+        List<String> linhas = persistencia.carregar(NOME_ARQUIVO);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.caminhoes.clear();
-            reader.readLine(); // Pula cabeçalho
+        for(String linha : linhas){
+            try {
+                String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                for (int i = 0; i < dados.length; i++) {
+                    if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
+                        dados[i] = dados[i].substring(1, dados[i].length() - 1);
+                    }
+                }
 
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                String[] dados = linha.replace("\"", "").split(",");
                 if (dados.length == 4) {
                     String placa = dados[0];
                     int capacidade = Integer.parseInt(dados[1]);
@@ -84,9 +86,9 @@ public class RepositorioCaminhao {
                     caminhao.setCadastrado(cadastrado);
                     this.caminhoes.add(caminhao);
                 }
+            } catch (Exception e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }
-        } catch (IOException | NumberFormatException e) {
-            System.err.println("Erro ao carregar caminhões do arquivo CSV: " + e.getMessage());
         }
     }
 }

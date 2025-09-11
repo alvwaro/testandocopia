@@ -1,12 +1,13 @@
 package dados;
 
 import negocio.Cliente;
-import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RepositorioCliente {
     private ArrayList<Cliente> clientes = new ArrayList<>();
-    private static final String ARQUIVO_CSV = "clientes.csv";
+    private final PersistenciaCSV persistencia = new PersistenciaCSV();
+    private static final String NOME_ARQUIVO = "clientes.csv";
 
     public RepositorioCliente() {
         carregar();
@@ -20,6 +21,7 @@ public class RepositorioCliente {
         return false;
     }
 
+    // ... (os métodos buscarPorCpf, listarTodos, remover, atualizar continuam IGUAIS) ...
     public Cliente buscarPorCpf(String cpf) {
         for (Cliente c : this.clientes) {
             if (c.getCpf() != null && c.getCpf().equals(cpf)) {
@@ -55,42 +57,30 @@ public class RepositorioCliente {
     }
 
 
+    // --- MÉTODOS DE PERSISTÊNCIA MODIFICADOS ---
+
     private void salvar() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_CSV))) {
-            writer.write("cpf,nome,idade,telefone,endereco,email,tipo,cadastrado\n");
-            for (Cliente cliente : clientes) {
-                String linha = String.format("\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%b",
-                        cliente.getCpf(),
-                        cliente.getNome(),
-                        cliente.getIdade(),
-                        cliente.getTelefone(),
-                        cliente.getEndereco(),
-                        cliente.getEmail(),
-                        cliente.getTipo(),
-                        cliente.isCadastrado()
-                );
-                writer.write(linha);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("ERRO CRÍTICO AO SALVAR CLIENTES: " + e.getMessage());
+        List<String> linhas = new ArrayList<>();
+        // Adiciona o cabeçalho
+        linhas.add("cpf,nome,idade,telefone,endereco,email,tipo,cadastrado");
+
+        for (Cliente cliente : clientes) {
+            String linha = String.format("\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%b",
+                    cliente.getCpf(), cliente.getNome(), cliente.getIdade(), cliente.getTelefone(),
+                    cliente.getEndereco(), cliente.getEmail(), cliente.getTipo(), cliente.isCadastrado()
+            );
+            linhas.add(linha);
         }
+        persistencia.salvar(NOME_ARQUIVO, linhas);
     }
 
     private void carregar() {
-        File arquivo = new File(ARQUIVO_CSV);
-        if (!arquivo.exists()) {
-            return;
-        }
+        this.clientes.clear();
+        List<String> linhas = persistencia.carregar(NOME_ARQUIVO);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_CSV))) {
-            this.clientes.clear();
-            reader.readLine(); // Pula a linha do cabeçalho
-
-            String linha;
-            while ((linha = reader.readLine()) != null) {
+        for (String linha : linhas) {
+            try {
                 String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-
                 for (int i = 0; i < dados.length; i++) {
                     if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
                         dados[i] = dados[i].substring(1, dados[i].length() - 1);
@@ -98,22 +88,13 @@ public class RepositorioCliente {
                 }
 
                 if (dados.length == 8) {
-                    String cpf = dados[0];
-                    String nome = dados[1];
-                    int idade = Integer.parseInt(dados[2]);
-                    String telefone = dados[3];
-                    String endereco = dados[4];
-                    String email = dados[5];
-                    String tipo = dados[6];
-                    boolean cadastrado = Boolean.parseBoolean(dados[7]);
-
-                    Cliente cliente = new Cliente(nome, idade, cpf, telefone, endereco, email, tipo);
-                    cliente.setCadastrado(cadastrado);
+                    Cliente cliente = new Cliente(dados[1], Integer.parseInt(dados[2]), dados[0], dados[3], dados[4], dados[5], dados[6]);
+                    cliente.setCadastrado(Boolean.parseBoolean(dados[7]));
                     this.clientes.add(cliente);
                 }
+            } catch (Exception e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }
-        } catch (IOException | NumberFormatException e) {
-            System.err.println("ERRO CRÍTICO AO CARREGAR CLIENTES: " + e.getMessage());
         }
     }
 }

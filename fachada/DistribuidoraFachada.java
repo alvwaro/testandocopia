@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import dados.mappers.AgendamentoCsvMapper; // Import necessário
 
 public class DistribuidoraFachada {
     private final IRepositorioCliente repositorioCliente;
@@ -19,7 +20,7 @@ public class DistribuidoraFachada {
     private final IRepositorioEstoque repositorioEstoque;
     private final IRepositorioFuncionario repFuncionario;
     private final IRepositorioPatio repPatio;
-    private final IRepositorioAgendamento repositorioAgendamento; // Adicionado
+    private final IRepositorioAgendamento repositorioAgendamento;
     private final NotaFiscal notaFiscal;
     private final Estoque estoque;
 
@@ -29,7 +30,7 @@ public class DistribuidoraFachada {
         this.repositorioEstoque = new RepositorioEstoque();
         this.repFuncionario = new RepositorioFuncionario();
         this.repPatio = new RepositorioPatio();
-        this.repositorioAgendamento = new RepositorioAgendamento(); // Adicionado
+        this.repositorioAgendamento = new RepositorioAgendamento();
         this.notaFiscal = new NotaFiscal();
         this.estoque = new Estoque();
 
@@ -41,7 +42,45 @@ public class DistribuidoraFachada {
             Funcionario admin = new Funcionario("Administrador", 0, "Admin User", 30, "11122233344", "00000000", "N/A", "admin@distribuidora.com", "admin", "admin", PerfilUsuario.ADMINISTRADOR);
             this.repFuncionario.cadastrar(admin);
         }
+
+        // CARREGA OS AGENDAMENTOS DO CSV AO INICIAR O SISTEMA
+        this.carregarAgendamentos();
     }
+
+    // --- LÓGICA DE CARREGAMENTO DE AGENDAMENTOS ---
+    private void carregarAgendamentos() {
+        List<String> linhas = ((RepositorioAgendamento) this.repositorioAgendamento).carregarLinhas();
+
+        for (String linha : linhas) {
+            try {
+                Agendamento agendamento = AgendamentoCsvMapper.fromCsvLine(linha);
+
+                Pedido pedidoCompleto = buscarPedidoPorNumero(agendamento.getPedido().getNumero());
+                if (pedidoCompleto == null) continue;
+                agendamento.setPedido(pedidoCompleto);
+
+                String placa = AgendamentoCsvMapper.getPlacaFromLine(linha);
+                if (placa != null) {
+                    Caminhao caminhao = this.repositorioCaminhao.buscarPorPlaca(placa);
+                    agendamento.setCaminhao(caminhao);
+                }
+
+                String matricula = AgendamentoCsvMapper.getMatriculaFromLine(linha);
+                if (matricula != null) {
+                    Funcionario func = this.repFuncionario.buscarPorMatricula(matricula);
+                    if (func instanceof Motorista) {
+                        agendamento.setMotorista((Motorista) func);
+                    }
+                }
+
+                ((RepositorioAgendamento) this.repositorioAgendamento).adicionarAgendamentoCarregado(agendamento);
+
+            } catch (Exception e) {
+                System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO agendamentos.csv: " + linha);
+            }
+        }
+    }
+
 
     // --- SISTEMA DE LOGIN E PERMISSÕES ---
     public Funcionario login(String matricula, String senha) {
@@ -122,17 +161,12 @@ public class DistribuidoraFachada {
         Pedido pedido = cliente.realizarPedido(produtosDesejados, this.estoque);
         System.out.println("Gerando nota fiscal...");
         notaFiscal.gerarNotaFiscal(pedido.getProdutos(), pedido);
-
-        // CORREÇÃO: Salva o estado do cliente (com o novo pedido) no repositório.
         this.repositorioCliente.atualizar(cliente);
-
         return pedido;
     }
     public void pagarPedido(Cliente cliente, Pedido pedido, double valorPago) {
         cliente.realizarPagamento(pedido, valorPago, this.estoque);
         this.repositorioEstoque.salvar(this.estoque.getProdutos());
-
-        // CORREÇÃO: Salva o estado do cliente (com o pedido pago) no repositório.
         this.repositorioCliente.atualizar(cliente);
     }
     public void cadastrarCaminhao(Caminhao caminhao, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.repositorioCaminhao.cadastrar(caminhao); }
@@ -195,7 +229,7 @@ public class DistribuidoraFachada {
         return GeradorRelatorios.gerarRelatorioEstoqueBaixo(this.estoque, limite);
     }
 
-    // --- NOVOS MÉTODOS DE GESTÃO DE ENTREGAS ---
+    // --- MÉTODOS DE GESTÃO DE ENTREGAS ---
     public void criarAgendamento(Pedido pedido) {
         if (pedido == null || !"PAGO".equalsIgnoreCase(pedido.getStatus())) {
             throw new IllegalArgumentException("Só é possível criar agendamento para pedidos PAGOS.");
@@ -231,6 +265,9 @@ public class DistribuidoraFachada {
         Agendamento agendamento = this.repositorioAgendamento.buscarPorPedido(numeroPedido);
         if (agendamento == null) {
             throw new NullPointerException("Agendamento não encontrado para o pedido Nº" + numeroPedido);
+        }
+        if (agendamento.getStatus() != StatusAgendamento.CONFIRMADO) {
+            throw new IllegalStateException("A entrega só pode ser iniciada se o agendamento estiver CONFIRMADO.");
         }
         registrarSaidaPatio(agendamento.getCaminhao().getPlaca(), patio);
         agendamento.iniciarEntrega();

@@ -10,15 +10,8 @@ import java.util.Date;
 
 public class AgendamentoCsvMapper {
 
-    // Formato de data consistente para salvar e carregar
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-    /**
-     * Converte um objeto Agendamento para uma linha no formato CSV.
-     * Salva apenas os IDs das entidades relacionadas.
-     * @param agendamento O objeto Agendamento a ser convertido.
-     * @return Uma string formatada como uma linha CSV.
-     */
     public static String toCsvLine(Agendamento agendamento) {
         String placa = (agendamento.getCaminhao() != null) ? agendamento.getCaminhao().getPlaca() : "N/A";
         String matricula = (agendamento.getMotorista() != null) ? agendamento.getMotorista().getMatricula() : "N/A";
@@ -31,16 +24,6 @@ public class AgendamentoCsvMapper {
                 agendamento.getStatus().name());
     }
 
-    /**
-     * Converte uma linha CSV para um objeto Agendamento.
-     * ATENÇÃO: Este método cria um Agendamento com objetos Pedido, Caminhao e
-     * Motorista incompletos (apenas com seus IDs). A Fachada deve ser
-     * responsável por carregar os objetos completos usando esses IDs.
-     * @param linha A string da linha CSV.
-     * @return Um novo objeto Agendamento com dados parciais.
-     * @throws IllegalArgumentException se a linha for inválida.
-     * @throws RuntimeException para erro de parse de data.
-     */
     public static Agendamento fromCsvLine(String linha) {
         String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
         for (int i = 0; i < dados.length; i++) {
@@ -72,5 +55,23 @@ public class AgendamentoCsvMapper {
             }
         }
         throw new IllegalArgumentException("Linha CSV inválida para Agendamento: " + linha);
+    }
+
+    public static String getPlacaFromLine(String linha) {
+        String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        if (dados.length == 5) {
+            String placa = dados[1].replace("\"", "");
+            return "N/A".equals(placa) ? null : placa;
+        }
+        return null;
+    }
+
+    public static String getMatriculaFromLine(String linha) {
+        String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        if (dados.length == 5) {
+            String matricula = dados[2].replace("\"", "");
+            return "N/A".equals(matricula) ? null : matricula;
+        }
+        return null;
     }
 }

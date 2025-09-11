@@ -1,7 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioAgendamento;
-import dados.mappers.AgendamentoCsvMapper; // <-- Importado
+import dados.mappers.AgendamentoCsvMapper;
 import negocio.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +12,19 @@ public class RepositorioAgendamento implements IRepositorioAgendamento {
     private static final String NOME_ARQUIVO = "agendamentos.csv";
 
     public RepositorioAgendamento() {
-        // O carregamento (carregar()) é complexo aqui.
-        // A melhor prática seria a Fachada orquestrar isso,
-        // lendo os IDs do CSV e buscando os objetos completos
-        // nos outros repositórios. Para simplificar, o carregamento foi omitido.
+        // O carregamento agora é feito pela fachada, que tem acesso aos outros repositórios.
+    }
+
+    // Método para a fachada adicionar os agendamentos carregados e montados
+    public void adicionarAgendamentoCarregado(Agendamento agendamento) {
+        if (agendamento != null) {
+            this.agendamentos.add(agendamento);
+        }
+    }
+
+    // Método para a fachada ler as linhas brutas do arquivo CSV
+    public List<String> carregarLinhas() {
+        return persistencia.carregar(NOME_ARQUIVO);
     }
 
     @Override
@@ -69,18 +78,8 @@ public class RepositorioAgendamento implements IRepositorioAgendamento {
         String cabecalho = "numeroPedido,placaCaminhao,matriculaMotorista,dataHoraPrevista,status";
 
         for (Agendamento agendamento : agendamentos) {
-            // Usa o Mapper para a conversão
             linhas.add(AgendamentoCsvMapper.toCsvLine(agendamento));
         }
         persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
-    }
-
-    // AVISO: O método carregar() aqui é uma simplificação.
-    // Ele não foi implementado porque exigiria acesso a outros repositórios,
-    // quebrando o isolamento da camada de dados. A Fachada deve gerenciar isso.
-    private void carregar() {
-        // Em um sistema real, a Fachada leria o CSV e usaria os IDs para
-        // buscar Pedido, Caminhao e Motorista de seus respectivos repositórios
-        // para então reconstruir o objeto Agendamento completo.
     }
 }

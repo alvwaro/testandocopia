@@ -32,6 +32,15 @@ public class Agendamento implements Serializable {
         System.out.println("Agendamento do pedido Nº" + pedido.getNumero() + " confirmado.");
     }
 
+
+    public void setCaminhao(Caminhao caminhao) {
+        this.caminhao = caminhao;
+    }
+
+    public void setMotorista(Motorista motorista) {
+        this.motorista = motorista;
+    }
+
     public void iniciarEntrega() {
         if (this.status != StatusAgendamento.CONFIRMADO) {
             throw new IllegalStateException("A entrega só pode ser iniciada se o agendamento estiver CONFIRMADO.");

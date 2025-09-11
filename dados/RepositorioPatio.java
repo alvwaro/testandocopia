@@ -1,7 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioPatio;
-import dados.mappers.CaminhaoCsvMapper; // Importe o mapper de Caminhao
+import dados.mappers.CaminhaoCsvMapper;
 import negocio.Caminhao;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,6 @@ public class RepositorioPatio implements IRepositorioPatio {
 
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        // REUTILIZE o CaminhaoCsvMapper para converter cada caminhão para uma linha CSV
         for (Caminhao caminhao : caminhoesPatio) {
             linhas.add(CaminhaoCsvMapper.toCsvLine(caminhao));
         }
@@ -66,7 +65,6 @@ public class RepositorioPatio implements IRepositorioPatio {
 
         for (String linha : linhas) {
             try {
-                // REUTILIZE o CaminhaoCsvMapper para converter cada linha em um objeto Caminhao
                 Caminhao caminhao = CaminhaoCsvMapper.fromCsvLine(linha);
                 this.caminhoesPatio.add(caminhao);
             } catch (Exception e) {

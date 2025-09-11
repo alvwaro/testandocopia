@@ -5,11 +5,6 @@ import java.util.Locale;
 
 public class ProdutoCsvMapper {
 
-    /**
-     * Converte um objeto Produto para uma linha no formato CSV.
-     * @param produto O objeto Produto a ser convertido.
-     * @return Uma string formatada como uma linha CSV.
-     */
     public static String toCsvLine(Produto produto) {
         return String.format(Locale.US, "\"%s\",\"%s\",\"%s\",%.2f,%d,%b",
                 produto.getCodigo(),
@@ -20,12 +15,6 @@ public class ProdutoCsvMapper {
                 produto.isCadastrado());
     }
 
-    /**
-     * Converte uma linha CSV para um objeto Produto.
-     * @param linha A string da linha CSV.
-     * @return Um novo objeto Produto.
-     * @throws IllegalArgumentException se a linha for inválida.
-     */
     public static Produto fromCsvLine(String linha) {
         String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
         for (int i = 0; i < dados.length; i++) {

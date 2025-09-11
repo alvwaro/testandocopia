@@ -109,12 +109,13 @@ public class TelaVendas {
             System.out.println("\nERRO DE VALIDAÇÃO: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             System.out.println("\nERRO NOS DADOS DO PEDIDO: " + e.getMessage());
-        } catch (RuntimeException e) { // Captura outros erros de execução, como estoque insuficiente
+        } catch (RuntimeException e) {
             System.out.println("\nERRO NA LÓGICA DO PEDIDO: " + e.getMessage());
-        } catch (Exception e) { // Captura final para qualquer outro erro inesperado
+        } catch (Exception e) {
             System.out.println("\nOcorreu um erro inesperado no sistema: " + e.getMessage());
         }
     }
+
 
     private void realizarPagamento() {
         try {
@@ -160,14 +161,17 @@ public class TelaVendas {
             scanner.nextLine();
 
             fachada.pagarPedido(cliente, pedidoAPagar, valorPago);
+
             System.out.println("Pagamento do pedido Nº" + numPedido + " realizado com sucesso!");
+            System.out.println("Um agendamento de entrega foi criado automaticamente. Acompanhe pela Gestão de Entregas.");
+
 
         } catch (InputMismatchException e) {
             System.out.println("\nErro de entrada: O número do pedido e o valor devem ser numéricos.");
             scanner.nextLine();
         } catch (ClienteNaoExisteException e) {
             System.out.println("\nERRO: " + e.getMessage());
-        } catch (IllegalArgumentException | IllegalStateException e) { // Estes podem ficar juntos, pois não são subclasses um do outro
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("\nErro ao processar o pagamento: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("\nOcorreu um erro inesperado: " + e.getMessage());

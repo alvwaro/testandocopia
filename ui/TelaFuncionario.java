@@ -3,7 +3,7 @@ package ui;
 import fachada.DistribuidoraFachada;
 import negocio.Funcionario;
 import negocio.Motorista;
-import negocio.PerfilUsuario;
+import negocio.enums.PerfilUsuario;
 import negocio.exceptions.PontoException;
 
 import java.util.ArrayList;

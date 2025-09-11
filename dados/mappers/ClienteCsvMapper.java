@@ -12,17 +12,14 @@ import java.util.Locale;
 public class ClienteCsvMapper {
 
     public static String toCsvLine(Cliente cliente) {
-        // Converte a lista de pedidos em uma única string
         StringBuilder pedidosStr = new StringBuilder();
         if (cliente.getPedidos() != null && !cliente.getPedidos().isEmpty()) {
             for (Pedido p : cliente.getPedidos()) {
                 StringBuilder produtosStr = new StringBuilder();
                 for (Produto prod : p.getProdutos()) {
-                    // Formato por produto: codigo:nome:desc:preco:qtd
                     produtosStr.append(String.format(Locale.US, "%s:%s:%s:%.2f:%d;",
                             prod.getCodigo(), prod.getNome(), prod.getDescricao(), prod.getPreco(), prod.getQuantidade()));
                 }
-                // Formato por pedido: numero|status|valor|dataPagamento!produtos
                 pedidosStr.append(String.format(Locale.US, "%d|%s|%.2f|%s!%s#",
                         p.getNumero(), p.getStatus(), p.getValorTotal(), p.getDataPagamento(), produtosStr.toString()));
             }
@@ -78,7 +75,6 @@ public class ClienteCsvMapper {
                     }
                     pedidos.add(p);
                 }
-                // Adiciona a lista de pedidos reconstruída ao cliente
                 for (Pedido p : pedidos) {
                     cliente.getPedidos().add(p);
                 }

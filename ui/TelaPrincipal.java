@@ -4,7 +4,7 @@ import fachada.DistribuidoraFachada;
 import negocio.Estoque;
 import negocio.Funcionario;
 import negocio.Patio;
-import negocio.PerfilUsuario;
+import negocio.enums.PerfilUsuario;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 

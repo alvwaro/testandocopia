@@ -57,7 +57,6 @@ public class RepositorioCaminhao implements IRepositorioCaminhao {
         String cabecalho = "placa,capacidade,status,cadastrado";
 
         for (Caminhao caminhao : caminhoes) {
-            // Usa o Mapper para a conversão
             linhas.add(CaminhaoCsvMapper.toCsvLine(caminhao));
         }
         persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
@@ -69,7 +68,6 @@ public class RepositorioCaminhao implements IRepositorioCaminhao {
 
         for(String linha : linhas){
             try {
-                // Usa o Mapper para a conversão
                 Caminhao caminhao = CaminhaoCsvMapper.fromCsvLine(linha);
                 this.caminhoes.add(caminhao);
             } catch (Exception e) {

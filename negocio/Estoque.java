@@ -29,8 +29,6 @@ public class Estoque implements Serializable {
         if (consultarProduto(produto.getCodigo()) == null) {
             this.produtos.add(produto);
         } else {
-            // Lançar exceção se o produto já existir, para evitar duplicatas silenciosas.
-            // throw new ProdutoJaExistenteException("Produto com código " + produto.getCodigo() + " já existe.");
         }
     }
 
@@ -53,15 +51,6 @@ public class Estoque implements Serializable {
         return new ArrayList<>(this.produtos); // Retorna uma cópia da lista
     }
 
-    /**
-     * NOVO MÉTODO CENTRALIZADO PARA DAR BAIXA NO ESTOQUE.
-     * Este método é responsável por diminuir a quantidade de produtos do estoque
-     * com base nos itens de um pedido.
-     *
-     * @param produtosDoPedido A lista de produtos contida no pedido a ser processado.
-     * @throws ProdutoNaoEncontradoException Se um produto do pedido não existir no estoque.
-     * @throws EstoqueInsuficienteException Se a quantidade de um produto no pedido for maior que a disponível no estoque.
-     */
     public void darBaixaEstoque(ArrayList<Produto> produtosDoPedido) {
         if (produtosDoPedido == null || produtosDoPedido.isEmpty()) {
             throw new IllegalArgumentException("A lista de produtos do pedido não pode ser vazia.");
@@ -78,7 +67,6 @@ public class Estoque implements Serializable {
                 throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + produtoPedido.getNome() + ". Disponível: " + produtoEstoque.getQuantidade() + ", Pedido: " + produtoPedido.getQuantidade());
             }
 
-            // Diminui a quantidade do produto no estoque
             produtoEstoque.setQuantidade(produtoEstoque.getQuantidade() - produtoPedido.getQuantidade());
         }
     }

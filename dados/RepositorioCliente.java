@@ -64,11 +64,9 @@ public class RepositorioCliente implements IRepositorioCliente {
 
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        // CORREÇÃO: Adicionado o campo 'pedidos' ao cabeçalho.
         String cabecalho = "cpf,nome,idade,telefone,endereco,email,tipo,cadastrado,pedidos";
 
         for (Cliente cliente : clientes) {
-            // Usa o Mapper para a conversão
             linhas.add(ClienteCsvMapper.toCsvLine(cliente));
         }
         persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
@@ -80,12 +78,11 @@ public class RepositorioCliente implements IRepositorioCliente {
 
         for (String linha : linhas) {
             try {
-                // Usa o Mapper para a conversão
                 Cliente cliente = ClienteCsvMapper.fromCsvLine(linha);
                 this.clientes.add(cliente);
             } catch (Exception e) {
                 System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
-                e.printStackTrace(); // Ajuda a depurar
+                e.printStackTrace();
             }
         }
     }

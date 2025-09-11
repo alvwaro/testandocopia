@@ -1,7 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioFuncionario;
-import dados.mappers.FuncionarioCsvMapper; // <-- Importado
+import dados.mappers.FuncionarioCsvMapper;
 import negocio.Funcionario;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +67,6 @@ public class RepositorioFuncionario implements IRepositorioFuncionario {
         String cabecalho = "tipo,matricula,nome,cpf,idade,telefone,endereco,email,cargo,salario,cnh,ultimaEntrada,ultimaSaida,senha,perfil";
 
         for (Funcionario func : funcionarios) {
-            // Usa o Mapper para a conversão
             linhas.add(FuncionarioCsvMapper.toCsvLine(func));
         }
         persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
@@ -79,7 +78,6 @@ public class RepositorioFuncionario implements IRepositorioFuncionario {
 
         for (String linha : linhas) {
             try {
-                // Usa o Mapper para a conversão
                 Funcionario funcionario = FuncionarioCsvMapper.fromCsvLine(linha);
                 this.funcionarios.add(funcionario);
             } catch (Exception e) {

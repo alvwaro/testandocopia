@@ -12,17 +12,14 @@ public class RepositorioAgendamento implements IRepositorioAgendamento {
     private static final String NOME_ARQUIVO = "agendamentos.csv";
 
     public RepositorioAgendamento() {
-        // O carregamento agora é feito pela fachada, que tem acesso aos outros repositórios.
     }
 
-    // Método para a fachada adicionar os agendamentos carregados e montados
     public void adicionarAgendamentoCarregado(Agendamento agendamento) {
         if (agendamento != null) {
             this.agendamentos.add(agendamento);
         }
     }
 
-    // Método para a fachada ler as linhas brutas do arquivo CSV
     public List<String> carregarLinhas() {
         return persistencia.carregar(NOME_ARQUIVO);
     }

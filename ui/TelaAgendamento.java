@@ -20,14 +20,14 @@ public class TelaAgendamento {
     }
 
     public void exibirMenuAgendamento() {
-        int opcao = -1; // CORREÇÃO AQUI: Inicialize a variável
+        int opcao = -1;
         do {
             System.out.println("\n--- Gestão de Entregas e Agendamentos ---");
-            System.out.println("1. Criar Agendamento para um Pedido Pago");
-            System.out.println("2. Listar Todos os Agendamentos");
-            System.out.println("3. Confirmar Agendamento (Vincular Caminhão e Motorista)");
-            System.out.println("4. Iniciar Entrega (Saída do Pátio)");
-            System.out.println("5. Finalizar Entrega (Retorno ao Pátio)");
+            // A opção de criar agendamento foi removida pois agora é automática.
+            System.out.println("1. Listar Todos os Agendamentos");
+            System.out.println("2. Confirmar Agendamento (Vincular Caminhão e Motorista)");
+            System.out.println("3. Iniciar Entrega (Saída do Pátio)");
+            System.out.println("4. Finalizar Entrega (Retorno ao Pátio)");
             System.out.println("0. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção: ");
 
@@ -36,11 +36,10 @@ public class TelaAgendamento {
                 scanner.nextLine();
 
                 switch (opcao) {
-                    case 1: criarAgendamento(); break;
-                    case 2: listarAgendamentos(); break;
-                    case 3: confirmarAgendamento(); break;
-                    case 4: iniciarEntrega(); break;
-                    case 5: finalizarEntrega(); break;
+                    case 1: listarAgendamentos(); break;
+                    case 2: confirmarAgendamento(); break;
+                    case 3: iniciarEntrega(); break;
+                    case 4: finalizarEntrega(); break;
                     case 0: break;
                     default: System.out.println("Opção inválida.");
                 }
@@ -52,19 +51,6 @@ public class TelaAgendamento {
                 System.out.println("\nOcorreu um erro: " + e.getMessage());
             }
         } while (opcao != 0);
-    }
-
-    private void criarAgendamento() {
-        System.out.print("Digite o número do pedido PAGO para criar o agendamento: ");
-        int numPedido = scanner.nextInt();
-        scanner.nextLine();
-
-        Pedido p = fachada.buscarPedidoPorNumero(numPedido);
-        if (p == null) {
-            System.out.println("Erro: Pedido não encontrado.");
-            return;
-        }
-        fachada.criarAgendamento(p);
     }
 
     private void listarAgendamentos() {
@@ -80,9 +66,13 @@ public class TelaAgendamento {
                 System.out.println("Data Prevista: " + a.getDataHoraPrevista());
                 if(a.getCaminhao() != null) {
                     System.out.println("Caminhão: " + a.getCaminhao().getPlaca());
+                } else {
+                    System.out.println("Caminhão: (Não alocado)");
                 }
                 if(a.getMotorista() != null) {
                     System.out.println("Motorista: " + a.getMotorista().getNome());
+                } else {
+                    System.out.println("Motorista: (Não alocado)");
                 }
             }
             System.out.println("---------------------------------");
@@ -101,6 +91,7 @@ public class TelaAgendamento {
         String matricula = scanner.nextLine();
 
         fachada.confirmarAgendamento(numPedido, placa, matricula);
+        System.out.println("Agendamento confirmado com sucesso!");
     }
 
     private void iniciarEntrega() {
@@ -108,6 +99,7 @@ public class TelaAgendamento {
         int numPedido = scanner.nextInt();
         scanner.nextLine();
         fachada.iniciarEntrega(numPedido, this.patio);
+        System.out.println("Entrega do pedido Nº" + numPedido + " iniciada.");
     }
 
     private void finalizarEntrega() {
@@ -115,5 +107,6 @@ public class TelaAgendamento {
         int numPedido = scanner.nextInt();
         scanner.nextLine();
         fachada.finalizarEntrega(numPedido, this.patio);
+        System.out.println("Entrega do pedido Nº" + numPedido + " finalizada.");
     }
 }

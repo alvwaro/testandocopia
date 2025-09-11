@@ -1,5 +1,7 @@
 package negocio;
 
+import negocio.enums.PerfilUsuario;
+
 import java.io.Serializable;
 
 public class Motorista extends Funcionario implements Serializable {

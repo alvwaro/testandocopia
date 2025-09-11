@@ -1,5 +1,6 @@
 package negocio;
 
+import negocio.enums.PerfilUsuario;
 import negocio.exceptions.PontoException;
 import java.io.Serializable;
 import java.time.Duration;
@@ -56,12 +57,10 @@ public class Funcionario extends Pessoa implements Serializable {
     public Funcionario(String cargo, double salario, String nome, int idade, String cpf, String telefone, String endereco, String email, String matricula, String senha, PerfilUsuario perfil) {
         super(nome, idade, cpf, telefone, endereco, email);
 
-        // CORREÇÃO: Permite a matrícula "admin" como uma exceção à regra de "apenas números"
         if (!"admin".equalsIgnoreCase(matricula) && (matricula == null || !matricula.matches("\\d+"))) {
             throw new IllegalArgumentException("Matrícula inválida. A matrícula deve conter apenas números.");
         }
         if (senha == null || senha.trim().isEmpty()) {
-            // Corrigido o texto da exceção que estava com caracteres estranhos
             throw new IllegalArgumentException("A senha não pode ser vazia.");
         }
 
@@ -72,7 +71,6 @@ public class Funcionario extends Pessoa implements Serializable {
         this.perfil = perfil;
     }
 
-    // Construtor antigo simplificado (usado internamente pela persistência)
     public Funcionario(String matricula){
         super();
         this.matricula = matricula;
@@ -126,7 +124,6 @@ public class Funcionario extends Pessoa implements Serializable {
         this.perfil = perfil;
     }
 
-    // Setters necessários para a persistência em CSV
     public void setUltimaEntrada(LocalDateTime ultimaEntrada) {
         this.ultimaEntrada = ultimaEntrada;
     }
@@ -160,7 +157,6 @@ public class Funcionario extends Pessoa implements Serializable {
 
         System.out.println("Tempo trabalhado no período: " + horas + "h " + minutos + "min");
 
-        // Reseta os pontos para o próximo ciclo de trabalho
         ultimaEntrada = null;
         ultimaSaida = null;
         return true;

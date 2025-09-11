@@ -3,6 +3,8 @@ package fachada;
 import dados.*;
 import dados.interfaces.*;
 import negocio.*;
+import negocio.enums.PerfilUsuario;
+import negocio.enums.StatusAgendamento;
 import negocio.exceptions.CaminhaoNaoCadastradoException;
 import negocio.exceptions.EstoqueInsuficienteException;
 import negocio.exceptions.PontoException;
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import dados.mappers.AgendamentoCsvMapper; // Import necessário
+import dados.mappers.AgendamentoCsvMapper;
 
 public class DistribuidoraFachada {
     private final IRepositorioCliente repositorioCliente;
@@ -43,11 +45,9 @@ public class DistribuidoraFachada {
             this.repFuncionario.cadastrar(admin);
         }
 
-        // CARREGA OS AGENDAMENTOS DO CSV AO INICIAR O SISTEMA
         this.carregarAgendamentos();
     }
 
-    // --- LÓGICA DE CARREGAMENTO DE AGENDAMENTOS ---
     private void carregarAgendamentos() {
         List<String> linhas = ((RepositorioAgendamento) this.repositorioAgendamento).carregarLinhas();
 
@@ -81,6 +81,21 @@ public class DistribuidoraFachada {
         }
     }
 
+    public void pagarPedido(Cliente cliente, Pedido pedido, double valorPago) {
+        cliente.realizarPagamento(pedido, valorPago, this.estoque);
+        this.repositorioEstoque.salvar(this.estoque.getProdutos());
+        this.repositorioCliente.atualizar(cliente);
+
+        try {
+            if (this.repositorioAgendamento.buscarPorPedido(pedido.getNumero()) == null) {
+                System.out.println("Criando agendamento de entrega para o pedido...");
+                Agendamento agendamento = new Agendamento(pedido, new java.util.Date());
+                this.repositorioAgendamento.cadastrar(agendamento);
+            }
+        } catch (Exception e) {
+            System.err.println("AVISO: Não foi possível criar o agendamento automaticamente: " + e.getMessage());
+        }
+    }
 
     // --- SISTEMA DE LOGIN E PERMISSÕES ---
     public Funcionario login(String matricula, String senha) {
@@ -114,7 +129,7 @@ public class DistribuidoraFachada {
         return this.repFuncionario.remover(matricula);
     }
 
-    // --- MÉTODOS DE PÁTIO (SIMPLIFICADOS) ---
+    // --- MÉTODOS DE PÁTIO ---
     public void registrarEntradaPatio(String placa, Patio patio) throws VagaInsuficienteException, CaminhaoNaoCadastradoException {
         Caminhao c = this.repositorioCaminhao.buscarPorPlaca(placa);
         if (c == null) {
@@ -163,11 +178,6 @@ public class DistribuidoraFachada {
         notaFiscal.gerarNotaFiscal(pedido.getProdutos(), pedido);
         this.repositorioCliente.atualizar(cliente);
         return pedido;
-    }
-    public void pagarPedido(Cliente cliente, Pedido pedido, double valorPago) {
-        cliente.realizarPagamento(pedido, valorPago, this.estoque);
-        this.repositorioEstoque.salvar(this.estoque.getProdutos());
-        this.repositorioCliente.atualizar(cliente);
     }
     public void cadastrarCaminhao(Caminhao caminhao, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.repositorioCaminhao.cadastrar(caminhao); }
     public ArrayList<Caminhao> getTodosCaminhoes() { return this.repositorioCaminhao.listarTodos(); }

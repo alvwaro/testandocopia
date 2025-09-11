@@ -8,12 +8,10 @@ public class PersistenciaCSV {
 
     private final String basePath = "data_csv/";
 
-    // Método salvar original
     public void salvar(String nomeArquivo, List<String> linhas) {
         salvar(nomeArquivo, linhas, null);
     }
 
-    // Novo método salvar com cabeçalho
     public void salvar(String nomeArquivo, List<String> linhas, String cabecalho) {
         File diretorio = new File(basePath);
         if (!diretorio.exists()) {
@@ -35,15 +33,14 @@ public class PersistenciaCSV {
     }
 
     public List<String> carregar(String nomeArquivo) {
-        // ... (método carregar continua o mesmo)
         List<String> linhas = new ArrayList<>();
         File arquivo = new File(basePath + nomeArquivo);
         if (!arquivo.exists()) {
-            return linhas; // Retorna lista vazia se o arquivo não existir
+            return linhas;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(arquivo))) {
-            reader.readLine(); // Pula a linha do cabeçalho
+            reader.readLine();
             String linha;
             while ((linha = reader.readLine()) != null) {
                 linhas.add(linha);

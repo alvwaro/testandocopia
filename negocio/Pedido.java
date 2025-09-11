@@ -2,7 +2,7 @@ package negocio;
 
 import java.io.Serializable;
 import negocio.exceptions.ProdutoNaoEncontradoException;
-import java.time.LocalDateTime; // Importar
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Pedido  implements Serializable {

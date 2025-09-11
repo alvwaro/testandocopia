@@ -1,5 +1,7 @@
 package negocio;
 
+import negocio.enums.StatusAgendamento;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -15,10 +17,9 @@ public class Agendamento implements Serializable {
     public Agendamento(Pedido pedido, Date dataHoraPrevista) {
         this.pedido = pedido;
         this.dataHoraPrevista = dataHoraPrevista;
-        this.status = StatusAgendamento.PENDENTE; // Inicia como pendente, sem caminhão ou motorista
+        this.status = StatusAgendamento.PENDENTE;
     }
 
-    // Métodos para controlar o fluxo do agendamento
     public void confirmarAgendamento(Caminhao caminhao, Motorista motorista) {
         if (this.status != StatusAgendamento.PENDENTE) {
             throw new IllegalStateException("O agendamento só pode ser confirmado se estiver PENDENTE.");

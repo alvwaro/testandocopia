@@ -1,8 +1,8 @@
 package dados.mappers;
 
 import negocio.Agendamento;
-import negocio.StatusAgendamento;
-import negocio.Pedido; // Apenas para criar o objeto base
+import negocio.enums.StatusAgendamento;
+import negocio.Pedido;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,15 +38,11 @@ public class AgendamentoCsvMapper {
                 Date dataPrevista = DATE_FORMAT.parse(dados[3]);
                 StatusAgendamento status = StatusAgendamento.valueOf(dados[4]);
 
-                // Cria um objeto Pedido "dummy" apenas com o número
                 Pedido pedidoBase = new Pedido();
                 pedidoBase.setNumero(numeroPedido);
 
                 Agendamento agendamento = new Agendamento(pedidoBase, dataPrevista);
                 agendamento.setStatus(status);
-
-                // A Fachada precisará usar os IDs dados[1] e dados[2] para
-                // buscar e setar os objetos Caminhao e Motorista completos.
 
                 return agendamento;
 

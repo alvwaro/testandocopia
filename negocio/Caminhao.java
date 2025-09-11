@@ -28,7 +28,6 @@ public class Caminhao  implements Serializable {
         this.cadastrado = true;
     }
 
-    // Construtor simplificado para uso interno
     public Caminhao(String placa){
         this.placa = placa;
     }

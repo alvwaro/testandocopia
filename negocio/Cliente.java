@@ -4,13 +4,9 @@ import java.io.Serializable;
 
 import negocio.exceptions.ClienteInvalidoException;
 import negocio.exceptions.ClienteNaoExisteException;
-import negocio.exceptions.PagamentoException;
-import negocio.exceptions.StatusInvalidoException;
-import negocio.Estoque;
 
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.List;
 public class Cliente extends Pessoa  implements Serializable {
     private static final long serialVersionUID = 1L;

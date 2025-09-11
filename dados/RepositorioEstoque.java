@@ -1,7 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioEstoque;
-import dados.mappers.ProdutoCsvMapper; // <-- Importado
+import dados.mappers.ProdutoCsvMapper;
 import negocio.Produto;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,6 @@ public class RepositorioEstoque implements IRepositorioEstoque {
         String cabecalho = "codigo,nome,descricao,preco,quantidade,cadastrado";
 
         for (Produto produto : produtos) {
-            // Usa o Mapper para a conversão
             linhas.add(ProdutoCsvMapper.toCsvLine(produto));
         }
         persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
@@ -29,7 +28,6 @@ public class RepositorioEstoque implements IRepositorioEstoque {
 
         for (String linha : linhas) {
             try {
-                // Usa o Mapper para a conversão
                 Produto produto = ProdutoCsvMapper.fromCsvLine(linha);
                 produtosCarregados.add(produto);
             } catch (Exception e) {

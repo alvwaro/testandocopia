@@ -2,6 +2,7 @@ package ui;
 
 import fachada.DistribuidoraFachada;
 import negocio.Caminhao;
+import negocio.Funcionario;
 import negocio.Patio;
 import negocio.exceptions.CaminhaoNaoCadastradoException;
 import negocio.exceptions.VagaInsuficienteException;
@@ -22,7 +23,7 @@ public class TelaControlePatio {
         this.patio = patio;
     }
 
-    public void exibirMenuPatio() {
+    public void exibirMenuPatio(Funcionario usuarioLogado) {
         int opcao;
         do {
             System.out.println("\n--- Gestão de Pátio e Caminhões ---");
@@ -40,7 +41,7 @@ public class TelaControlePatio {
 
                 switch (opcao) {
                     case 1:
-                        cadastrarCaminhao();
+                        cadastrarCaminhao(usuarioLogado);
                         break;
                     case 2:
                         registrarEntrada();
@@ -67,7 +68,7 @@ public class TelaControlePatio {
         } while (opcao != 0);
     }
 
-    private void cadastrarCaminhao() {
+    private void cadastrarCaminhao(Funcionario usuarioLogado) {
         try {
             System.out.println("\n== Cadastro de Caminhão ==");
             System.out.print("Placa: ");
@@ -77,7 +78,7 @@ public class TelaControlePatio {
             scanner.nextLine();
 
             Caminhao caminhao = new Caminhao(placa, capacidade, "Disponivel");
-            fachada.cadastrarCaminhao(caminhao);
+            fachada.cadastrarCaminhao(caminhao, usuarioLogado);
             System.out.println("Caminhão cadastrado com sucesso no sistema!");
 
         } catch (InputMismatchException e) {

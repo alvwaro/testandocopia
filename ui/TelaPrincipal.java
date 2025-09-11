@@ -37,7 +37,8 @@ public class TelaPrincipal {
 
         telaCliente = new TelaCliente(fachada);
         telaFuncionario = new TelaFuncionario(fachada);
-        telaEstoque = new TelaEstoque(fachada, estoque, usuarioLogado);
+        // CORREÇÃO: Chamada do construtor sem o 'usuarioLogado'
+        telaEstoque = new TelaEstoque(fachada, estoque);
         telaControlePatio = new TelaControlePatio(fachada, patio);
         telaVendas = new TelaVendas(fachada, estoque);
         telaRelatorios = new TelaRelatorios(fachada);
@@ -115,7 +116,7 @@ public class TelaPrincipal {
             case 1: telaCliente.exibirMenuCliente(); break;
             case 2: telaFuncionario.exibirMenuFuncionario(usuarioLogado); break;
             case 3: telaEstoque.exibirMenuEstoque(usuarioLogado); break;
-            case 4: telaControlePatio.exibirMenuPatio(); break;
+            case 4: telaControlePatio.exibirMenuPatio(usuarioLogado); break;
             case 5: telaVendas.exibirMenuVendas(); break;
             case 6: telaRelatorios.exibirMenuRelatorios(); break;
             case 0: break;
@@ -147,7 +148,7 @@ public class TelaPrincipal {
     private static void tratarOpcaoEstoquista(int opcao) {
         switch (opcao) {
             case 1: telaEstoque.exibirMenuEstoque(usuarioLogado); break;
-            case 2: telaControlePatio.exibirMenuPatio(); break;
+            case 2: telaControlePatio.exibirMenuPatio(usuarioLogado); break;
             case 0: break;
             default: System.out.println("Opção inválida. Tente novamente.");
         }

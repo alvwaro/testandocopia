@@ -1,5 +1,6 @@
 package ui;
 
+import negocio.Funcionario;
 import fachada.DistribuidoraFachada;
 import negocio.Estoque;
 import negocio.Produto;
@@ -18,7 +19,7 @@ public class TelaCadastroProduto {
         this.scanner = new Scanner(System.in);
     }
 
-    public void cadastrarProduto() {
+    public void cadastrarProduto(Funcionario usuarioLogado) {
         try {
             System.out.println("== Cadastro de Produto ==");
             System.out.print("Código: ");
@@ -39,7 +40,8 @@ public class TelaCadastroProduto {
 
             Produto produto = new Produto(codigo, nome, descricao, preco, quantidade);
 
-            fachada.cadastrarProduto(produto);
+            // Passe o 'usuarioLogado' na chamada da fachada
+            fachada.cadastrarProduto(produto, usuarioLogado);
 
             System.out.println("Produto cadastrado com sucesso!");
 

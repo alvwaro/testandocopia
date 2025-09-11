@@ -2,6 +2,7 @@ package ui;
 
 import fachada.DistribuidoraFachada;
 import negocio.Estoque;
+import negocio.Funcionario;
 import negocio.Produto;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -16,7 +17,7 @@ public class TelaEstoque {
         this.scanner = new Scanner(System.in);
     }
 
-    public void exibirMenuEstoque() {
+    public void exibirMenuEstoque(Funcionario usuarioLogado) {
         int opcao;
         do {
             System.out.println("\n--- Gestão de Estoque e Produtos ---");
@@ -34,19 +35,19 @@ public class TelaEstoque {
 
                 switch (opcao) {
                     case 1:
-                        cadastrarProduto();
+                        cadastrarProduto(usuarioLogado);
                         break;
                     case 2:
-                        listarTodosOsProdutos(); // Chama o método corrigido
+                        listarTodosOsProdutos();
                         break;
                     case 3:
                         buscarProduto();
                         break;
                     case 4:
-                        atualizarPreco();
+                        atualizarPreco(usuarioLogado);
                         break;
                     case 5:
-                        removerProduto();
+                        removerProduto(usuarioLogado);
                         break;
                     case 0:
                         break;
@@ -61,9 +62,9 @@ public class TelaEstoque {
         } while (opcao != 0);
     }
 
-    private void listarTodosOsProdutos() {
+    public void listarTodosOsProdutos() {
         System.out.println("\n--- Lista Completa de Produtos no Estoque ---");
-        ArrayList<Produto> produtos = fachada.listarProdutos(); // Busca a lista da fachada
+        ArrayList<Produto> produtos = fachada.listarProdutos();
 
         if (produtos == null || produtos.isEmpty()) {
             System.out.println("Nenhum produto cadastrado no estoque.");
@@ -78,7 +79,7 @@ public class TelaEstoque {
         System.out.println("----------------------------------------------------------------");
     }
 
-    private void cadastrarProduto() {
+    private void cadastrarProduto(Funcionario usuarioLogado) {
         try {
             System.out.println("\n== Cadastro de Produto ==");
             System.out.print("Código: ");
@@ -94,13 +95,13 @@ public class TelaEstoque {
             scanner.nextLine();
 
             Produto produto = new Produto(codigo, nome, descricao, preco, quantidade);
-            fachada.cadastrarProduto(produto);
+            fachada.cadastrarProduto(produto, usuarioLogado);
             System.out.println("Produto cadastrado com sucesso!");
 
         } catch (InputMismatchException e) {
             System.out.println("\nErro de Entrada: Preço e quantidade devem ser valores numéricos.");
-            scanner.nextLine(); // Limpa o buffer
-        } catch (IllegalArgumentException e) {
+            scanner.nextLine();
+        } catch (IllegalArgumentException | SecurityException e) {
             System.out.println("\nErro ao cadastrar produto: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("\nOcorreu um erro inesperado: " + e.getMessage());
@@ -119,17 +120,21 @@ public class TelaEstoque {
         }
     }
 
-    private void removerProduto() {
-        System.out.print("\nDigite o código do produto a ser removido: ");
-        String codigo = scanner.nextLine();
-        if (fachada.removerProduto(codigo)) {
-            System.out.println("Produto removido com sucesso.");
-        } else {
-            System.out.println("Não foi possível remover. Produto não encontrado.");
+    private void removerProduto(Funcionario usuarioLogado) {
+        try {
+            System.out.print("\nDigite o código do produto a ser removido: ");
+            String codigo = scanner.nextLine();
+            if (fachada.removerProduto(codigo, usuarioLogado)) {
+                System.out.println("Produto removido com sucesso.");
+            } else {
+                System.out.println("Não foi possível remover. Produto não encontrado.");
+            }
+        } catch (SecurityException e) {
+            System.out.println("\nERRO DE PERMISSÃO: " + e.getMessage());
         }
     }
 
-    private void atualizarPreco() {
+    private void atualizarPreco(Funcionario usuarioLogado) {
         try {
             System.out.print("\nDigite o código do produto para atualizar o preço: ");
             String codigo = scanner.nextLine();
@@ -144,13 +149,13 @@ public class TelaEstoque {
             double novoPreco = scanner.nextDouble();
             scanner.nextLine();
 
-            fachada.atualizarPreco(p, novoPreco);
+            fachada.atualizarPreco(p, novoPreco, usuarioLogado);
             System.out.println("Preço atualizado com sucesso!");
 
         } catch (InputMismatchException e) {
             System.out.println("\nErro: O preço deve ser um valor numérico.");
             scanner.nextLine();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | SecurityException e) {
             System.out.println("\nErro: " + e.getMessage());
         }
     }

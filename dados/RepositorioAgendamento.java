@@ -1,22 +1,21 @@
 package dados;
 
 import dados.interfaces.IRepositorioAgendamento;
+import dados.mappers.AgendamentoCsvMapper; // <-- Importado
 import negocio.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class RepositorioAgendamento implements IRepositorioAgendamento {
     private ArrayList<Agendamento> agendamentos = new ArrayList<>();
     private final PersistenciaCSV persistencia = new PersistenciaCSV();
     private static final String NOME_ARQUIVO = "agendamentos.csv";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     public RepositorioAgendamento() {
-        // carregar(); // Idealmente, o carregamento dependeria de outros repositórios,
-        // então é melhor deixar a fachada orquestrar isso.
+        // O carregamento (carregar()) é complexo aqui.
+        // A melhor prática seria a Fachada orquestrar isso,
+        // lendo os IDs do CSV e buscando os objetos completos
+        // nos outros repositórios. Para simplificar, o carregamento foi omitido.
     }
 
     @Override
@@ -65,38 +64,23 @@ public class RepositorioAgendamento implements IRepositorioAgendamento {
         }
     }
 
-    // O ideal seria que a camada de dados não acessasse outra camada (como a fachada)
-    // para buscar objetos completos. Esta é uma simplificação.
-    // O correto seria salvar apenas os IDs e a fachada ser responsável por "montar"
-    // os objetos na hora de carregar.
-
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        // Adicionando matriculaMotorista
-        linhas.add("numeroPedido,placaCaminhao,matriculaMotorista,dataHoraPrevista,status");
+        String cabecalho = "numeroPedido,placaCaminhao,matriculaMotorista,dataHoraPrevista,status";
 
         for (Agendamento agendamento : agendamentos) {
-            String placa = (agendamento.getCaminhao() != null) ? agendamento.getCaminhao().getPlaca() : "N/A";
-            String matricula = (agendamento.getMotorista() != null) ? agendamento.getMotorista().getMatricula() : "N/A";
-
-            String linha = String.format("%d,\"%s\",\"%s\",\"%s\",%s",
-                    agendamento.getPedido().getNumero(),
-                    placa,
-                    matricula,
-                    DATE_FORMAT.format(agendamento.getDataHoraPrevista()),
-                    agendamento.getStatus().name()
-            );
-            linhas.add(linha);
+            // Usa o Mapper para a conversão
+            linhas.add(AgendamentoCsvMapper.toCsvLine(agendamento));
         }
-        persistencia.salvar(NOME_ARQUIVO, linhas);
+        persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
     }
 
     // AVISO: O método carregar() aqui é uma simplificação.
-    // Ele não reconstrói os objetos Pedido, Caminhao e Motorista completamente,
-    // apenas usa seus IDs. Para as operações atuais, isso funciona, mas em um
-    // sistema mais complexo, a Fachada precisaria orquestrar o carregamento.
+    // Ele não foi implementado porque exigiria acesso a outros repositórios,
+    // quebrando o isolamento da camada de dados. A Fachada deve gerenciar isso.
     private void carregar() {
-        // Esta funcionalidade precisaria ser bem mais robusta para um sistema real.
-        // Por enquanto, vamos manter a lógica simplificada para não quebrar o que já existe.
+        // Em um sistema real, a Fachada leria o CSV e usaria os IDs para
+        // buscar Pedido, Caminhao e Motorista de seus respectivos repositórios
+        // para então reconstruir o objeto Agendamento completo.
     }
 }

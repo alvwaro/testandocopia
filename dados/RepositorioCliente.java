@@ -1,6 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioCliente;
+import dados.mappers.ClienteCsvMapper; // <-- Importado
 import negocio.Cliente;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,16 +64,13 @@ public class RepositorioCliente implements IRepositorioCliente {
 
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        linhas.add("cpf,nome,idade,telefone,endereco,email,tipo,cadastrado");
+        String cabecalho = "cpf,nome,idade,telefone,endereco,email,tipo,cadastrado";
 
         for (Cliente cliente : clientes) {
-            String linha = String.format("\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",%b",
-                    cliente.getCpf(), cliente.getNome(), cliente.getIdade(), cliente.getTelefone(),
-                    cliente.getEndereco(), cliente.getEmail(), cliente.getTipo(), cliente.isCadastrado()
-            );
-            linhas.add(linha);
+            // Usa o Mapper para a conversão
+            linhas.add(ClienteCsvMapper.toCsvLine(cliente));
         }
-        persistencia.salvar(NOME_ARQUIVO, linhas);
+        persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
     }
 
     private void carregar() {
@@ -81,18 +79,9 @@ public class RepositorioCliente implements IRepositorioCliente {
 
         for (String linha : linhas) {
             try {
-                String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-                for (int i = 0; i < dados.length; i++) {
-                    if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
-                        dados[i] = dados[i].substring(1, dados[i].length() - 1);
-                    }
-                }
-
-                if (dados.length == 8) {
-                    Cliente cliente = new Cliente(dados[1], Integer.parseInt(dados[2]), dados[0], dados[3], dados[4], dados[5], dados[6]);
-                    cliente.setCadastrado(Boolean.parseBoolean(dados[7]));
-                    this.clientes.add(cliente);
-                }
+                // Usa o Mapper para a conversão
+                Cliente cliente = ClienteCsvMapper.fromCsvLine(linha);
+                this.clientes.add(cliente);
             } catch (Exception e) {
                 System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }

@@ -5,7 +5,6 @@ import negocio.Estoque;
 import negocio.Funcionario;
 import negocio.Patio;
 import negocio.PerfilUsuario;
-
 import java.util.InputMismatchException;
 import java.util.Scanner;
 

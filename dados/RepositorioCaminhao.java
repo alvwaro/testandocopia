@@ -1,6 +1,7 @@
 package dados;
 
 import dados.interfaces.IRepositorioCaminhao;
+import dados.mappers.CaminhaoCsvMapper; // <-- Importado
 import negocio.Caminhao;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,18 +54,13 @@ public class RepositorioCaminhao implements IRepositorioCaminhao {
 
     private void salvar() {
         List<String> linhas = new ArrayList<>();
-        linhas.add("placa,capacidade,status,cadastrado");
+        String cabecalho = "placa,capacidade,status,cadastrado";
 
         for (Caminhao caminhao : caminhoes) {
-            String linha = String.format("\"%s\",%d,\"%s\",%b",
-                    caminhao.getPlaca(),
-                    caminhao.getCapacidade(),
-                    caminhao.getStatus(),
-                    caminhao.getCadastrado()
-            );
-            linhas.add(linha);
+            // Usa o Mapper para a conversão
+            linhas.add(CaminhaoCsvMapper.toCsvLine(caminhao));
         }
-        persistencia.salvar(NOME_ARQUIVO, linhas);
+        persistencia.salvar(NOME_ARQUIVO, linhas, cabecalho);
     }
 
     private void carregar() {
@@ -73,18 +69,9 @@ public class RepositorioCaminhao implements IRepositorioCaminhao {
 
         for(String linha : linhas){
             try {
-                String[] dados = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-                for (int i = 0; i < dados.length; i++) {
-                    if (dados[i].startsWith("\"") && dados[i].endsWith("\"")) {
-                        dados[i] = dados[i].substring(1, dados[i].length() - 1);
-                    }
-                }
-
-                if (dados.length == 4) {
-                    Caminhao caminhao = new Caminhao(dados[0], Integer.parseInt(dados[1]), dados[2]);
-                    caminhao.setCadastrado(Boolean.parseBoolean(dados[3]));
-                    this.caminhoes.add(caminhao);
-                }
+                // Usa o Mapper para a conversão
+                Caminhao caminhao = CaminhaoCsvMapper.fromCsvLine(linha);
+                this.caminhoes.add(caminhao);
             } catch (Exception e) {
                 System.err.println("ERRO AO PROCESSAR LINHA DO ARQUIVO " + NOME_ARQUIVO + ": " + linha);
             }

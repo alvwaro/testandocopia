@@ -56,12 +56,13 @@ public class Funcionario extends Pessoa implements Serializable {
     public Funcionario(String cargo, double salario, String nome, int idade, String cpf, String telefone, String endereco, String email, String matricula, String senha, PerfilUsuario perfil) {
         super(nome, idade, cpf, telefone, endereco, email);
 
-        // Validações...
-        if (matricula == null || !matricula.matches("\\d+")) {
+        // CORREÇÃO: Permite a matrícula "admin" como uma exceção à regra de "apenas números"
+        if (!"admin".equalsIgnoreCase(matricula) && (matricula == null || !matricula.matches("\\d+"))) {
             throw new IllegalArgumentException("Matrícula inválida. A matrícula deve conter apenas números.");
         }
         if (senha == null || senha.trim().isEmpty()) {
-            throw new IllegalArgumentException("A senha не pode ser vazia.");
+            // Corrigido o texto da exceção que estava com caracteres estranhos
+            throw new IllegalArgumentException("A senha não pode ser vazia.");
         }
 
         this.cargo = cargo;

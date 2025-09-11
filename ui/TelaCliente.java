@@ -2,11 +2,14 @@ package ui;
 
 import fachada.DistribuidoraFachada;
 import negocio.Cliente;
+import negocio.Pedido;
+import negocio.Produto;
 import negocio.exceptions.ClienteInvalidoException;
 import negocio.exceptions.CpfJaExistenteException;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class TelaCliente {
@@ -19,13 +22,14 @@ public class TelaCliente {
     }
 
     public void exibirMenuCliente() {
-        int opcao;
+        int opcao = -1;
         do {
             System.out.println("\n--- Gestão de Clientes ---");
             System.out.println("1. Cadastrar Novo Cliente");
             System.out.println("2. Listar Todos os Clientes (Detalhado)");
             System.out.println("3. Buscar Cliente por CPF");
             System.out.println("4. Remover Cliente");
+            System.out.println("5. Ver Histórico de Pedidos"); // NOVA OPÇÃO
             System.out.println("0. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção: ");
 
@@ -46,6 +50,9 @@ public class TelaCliente {
                     case 4:
                         removerCliente();
                         break;
+                    case 5:
+                        verHistoricoDePedidos(); // CHAMADA DO NOVO MÉTODO
+                        break;
                     case 0:
                         break;
                     default:
@@ -58,6 +65,42 @@ public class TelaCliente {
             }
         } while (opcao != 0);
     }
+
+    private void verHistoricoDePedidos() {
+        System.out.print("\nDigite o CPF do cliente para ver o histórico: ");
+        String cpf = scanner.nextLine();
+        Cliente c = fachada.buscarClientePorCpf(cpf);
+
+        if (c == null) {
+            System.out.println("Cliente com CPF " + cpf + " não encontrado.");
+            return;
+        }
+
+        System.out.println("\n--- Histórico de Pedidos do Cliente: " + c.getNome() + " ---");
+        List<Pedido> pedidos = c.getPedidos();
+
+        if (pedidos == null || pedidos.isEmpty()) {
+            System.out.println("Este cliente ainda não realizou nenhum pedido.");
+            return;
+        }
+
+        for (Pedido p : pedidos) {
+            System.out.println("==============================================");
+            System.out.printf("Pedido Nº: %d | Status: %s | Valor Total: R$ %.2f\n",
+                    p.getNumero(), p.getStatus(), p.getValorTotal());
+            System.out.println("Produtos:");
+            if (p.getProdutos().isEmpty()) {
+                System.out.println("  - (Pedido sem produtos)");
+            } else {
+                for (Produto prod : p.getProdutos()) {
+                    System.out.printf("  - %dx %s (R$ %.2f cada)\n",
+                            prod.getQuantidade(), prod.getNome(), prod.getPreco());
+                }
+            }
+        }
+        System.out.println("==============================================");
+    }
+
 
     private void listarTodosOsClientes() {
         System.out.println("\n--- Lista Completa de Clientes ---");

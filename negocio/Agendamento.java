@@ -1,40 +1,64 @@
 package negocio;
 
 import java.io.Serializable;
-
 import java.util.Date;
 
-public class Agendamento  implements Serializable {
+public class Agendamento implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Pedido pedido;
     private Caminhao caminhao;
+    private Motorista motorista; // Novo atributo
     private Date dataHoraPrevista;
     private StatusAgendamento status;
 
-    public Agendamento(Pedido pedido, Caminhao caminhao, Date dataHoraPrevista) {
+    public Agendamento(Pedido pedido, Date dataHoraPrevista) {
         this.pedido = pedido;
-        this.caminhao = caminhao;
         this.dataHoraPrevista = dataHoraPrevista;
-        this.status = StatusAgendamento.PENDENTE;
+        this.status = StatusAgendamento.PENDENTE; // Inicia como pendente, sem caminhão ou motorista
     }
 
-    public void confirmarAgendamento() {
-        if (this.status != StatusAgendamento.PENDENTE){
-            throw new IllegalArgumentException("O agendamento não pode ser confirmado, pois seu status atual é: " + this.status);
+    // Métodos para controlar o fluxo do agendamento
+    public void confirmarAgendamento(Caminhao caminhao, Motorista motorista) {
+        if (this.status != StatusAgendamento.PENDENTE) {
+            throw new IllegalStateException("O agendamento só pode ser confirmado se estiver PENDENTE.");
         }
+        if (caminhao == null || motorista == null) {
+            throw new IllegalArgumentException("Caminhão e Motorista são obrigatórios para confirmar.");
+        }
+        this.caminhao = caminhao;
+        this.motorista = motorista;
         this.status = StatusAgendamento.CONFIRMADO;
+        System.out.println("Agendamento do pedido Nº" + pedido.getNumero() + " confirmado.");
+    }
+
+    public void iniciarEntrega() {
+        if (this.status != StatusAgendamento.CONFIRMADO) {
+            throw new IllegalStateException("A entrega só pode ser iniciada se o agendamento estiver CONFIRMADO.");
+        }
+        this.status = StatusAgendamento.EM_ROTA;
+        this.pedido.setStatus("EM ROTA DE ENTREGA"); // Atualiza status do pedido também
+        System.out.println("Pedido Nº" + pedido.getNumero() + " saiu para entrega.");
+    }
+
+    public void finalizarEntrega() {
+        if (this.status != StatusAgendamento.EM_ROTA) {
+            throw new IllegalStateException("A entrega só pode ser finalizada se estiver EM ROTA.");
+        }
+        this.status = StatusAgendamento.CONCLUIDO;
+        this.pedido.setStatus("ENTREGUE"); // Atualiza status final do pedido
+        System.out.println("Pedido Nº" + pedido.getNumero() + " entregue com sucesso.");
     }
 
     public void cancelarAgendamento() {
-        if (this.status != StatusAgendamento.CONFIRMADO){
-            throw new IllegalArgumentException("O agendamento não pode ser confirmado, pois seu status atual é: " + this.status);
+        if (this.status == StatusAgendamento.CONCLUIDO || this.status == StatusAgendamento.EM_ROTA) {
+            throw new IllegalStateException("Não é possível cancelar um agendamento que está em rota ou já foi concluído.");
         }
         this.status = StatusAgendamento.CANCELADO;
-
+        System.out.println("Agendamento do pedido Nº" + pedido.getNumero() + " foi cancelado.");
     }
 
-    // getters e setters
+    // Getters e Setters
     public Pedido getPedido() {
         return pedido;
     }
@@ -47,8 +71,8 @@ public class Agendamento  implements Serializable {
         return caminhao;
     }
 
-    public void setCaminhao(Caminhao caminhao) {
-        this.caminhao = caminhao;
+    public Motorista getMotorista() {
+        return motorista;
     }
 
     public Date getDataHoraPrevista() {

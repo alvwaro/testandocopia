@@ -3,6 +3,7 @@ package negocio;
 public enum StatusAgendamento {
     PENDENTE,
     CONFIRMADO,
-    CANCELADO,
-    CONCLUIDO
+    EM_ROTA,
+    CONCLUIDO,
+    CANCELADO
 }

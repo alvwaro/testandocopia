@@ -19,6 +19,7 @@ public class DistribuidoraFachada {
     private final IRepositorioEstoque repositorioEstoque;
     private final IRepositorioFuncionario repFuncionario;
     private final IRepositorioPatio repPatio;
+    private final IRepositorioAgendamento repositorioAgendamento; // Adicionado
     private final NotaFiscal notaFiscal;
     private final Estoque estoque;
 
@@ -28,6 +29,7 @@ public class DistribuidoraFachada {
         this.repositorioEstoque = new RepositorioEstoque();
         this.repFuncionario = new RepositorioFuncionario();
         this.repPatio = new RepositorioPatio();
+        this.repositorioAgendamento = new RepositorioAgendamento(); // Adicionado
         this.notaFiscal = new NotaFiscal();
         this.estoque = new Estoque();
 
@@ -181,5 +183,73 @@ public class DistribuidoraFachada {
     }
     public List<Produto> gerarRelatorioEstoqueBaixo(int limite) {
         return GeradorRelatorios.gerarRelatorioEstoqueBaixo(this.estoque, limite);
+    }
+
+    // --- NOVOS MÉTODOS DE GESTÃO DE ENTREGAS ---
+    public void criarAgendamento(Pedido pedido) {
+        if (pedido == null || !"PAGO".equalsIgnoreCase(pedido.getStatus())) {
+            throw new IllegalArgumentException("Só é possível criar agendamento para pedidos PAGOS.");
+        }
+        if (this.repositorioAgendamento.buscarPorPedido(pedido.getNumero()) != null) {
+            throw new IllegalStateException("Este pedido já possui um agendamento.");
+        }
+        Agendamento agendamento = new Agendamento(pedido, new java.util.Date());
+        this.repositorioAgendamento.cadastrar(agendamento);
+        System.out.println("Agendamento PENDENTE criado para o pedido Nº" + pedido.getNumero());
+    }
+
+    public void confirmarAgendamento(int numeroPedido, String placaCaminhao, String matriculaMotorista) {
+        Agendamento agendamento = this.repositorioAgendamento.buscarPorPedido(numeroPedido);
+        if (agendamento == null) {
+            throw new NullPointerException("Agendamento não encontrado para o pedido Nº" + numeroPedido);
+        }
+        Caminhao caminhao = this.repositorioCaminhao.buscarPorPlaca(placaCaminhao);
+        if (caminhao == null) {
+            throw new NullPointerException("Caminhão com placa " + placaCaminhao + " não encontrado.");
+        }
+        Funcionario func = this.repFuncionario.buscarPorMatricula(matriculaMotorista);
+        if (!(func instanceof Motorista)) {
+            throw new IllegalArgumentException("A matrícula " + matriculaMotorista + " não pertence a um motorista.");
+        }
+        Motorista motorista = (Motorista) func;
+
+        agendamento.confirmarAgendamento(caminhao, motorista);
+        this.repositorioAgendamento.atualizar(agendamento);
+    }
+
+    public void iniciarEntrega(int numeroPedido, Patio patio) {
+        Agendamento agendamento = this.repositorioAgendamento.buscarPorPedido(numeroPedido);
+        if (agendamento == null) {
+            throw new NullPointerException("Agendamento não encontrado para o pedido Nº" + numeroPedido);
+        }
+        registrarSaidaPatio(agendamento.getCaminhao().getPlaca(), patio);
+        agendamento.iniciarEntrega();
+        this.repositorioAgendamento.atualizar(agendamento);
+    }
+
+    public void finalizarEntrega(int numeroPedido, Patio patio) {
+        Agendamento agendamento = this.repositorioAgendamento.buscarPorPedido(numeroPedido);
+        if (agendamento == null) {
+            throw new NullPointerException("Agendamento não encontrado para o pedido Nº" + numeroPedido);
+        }
+        registrarEntradaPatio(agendamento.getCaminhao().getPlaca(), patio);
+        agendamento.finalizarEntrega();
+        this.repositorioAgendamento.atualizar(agendamento);
+    }
+
+    public ArrayList<Agendamento> listarTodosAgendamentos() {
+        return this.repositorioAgendamento.listarTodos();
+    }
+
+    public Pedido buscarPedidoPorNumero(int numeroPedido) {
+        ArrayList<Cliente> clientes = this.repositorioCliente.listarTodos();
+        for(Cliente c : clientes) {
+            for (Pedido p : c.getPedidos()) {
+                if (p.getNumero() == numeroPedido) {
+                    return p;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -17,6 +17,7 @@ public class TelaPrincipal {
     private static TelaEstoque telaEstoque;
     private static TelaControlePatio telaControlePatio;
     private static TelaVendas telaVendas;
+    private static TelaAgendamento telaAgendamento; // Adicionado
     private static TelaRelatorios telaRelatorios;
     private static Scanner scanner;
     private static Funcionario usuarioLogado;
@@ -37,10 +38,10 @@ public class TelaPrincipal {
 
         telaCliente = new TelaCliente(fachada);
         telaFuncionario = new TelaFuncionario(fachada);
-        // CORREÇÃO: Chamada do construtor sem o 'usuarioLogado'
         telaEstoque = new TelaEstoque(fachada, estoque);
         telaControlePatio = new TelaControlePatio(fachada, patio);
         telaVendas = new TelaVendas(fachada, estoque);
+        telaAgendamento = new TelaAgendamento(fachada, patio); // Adicionado
         telaRelatorios = new TelaRelatorios(fachada);
         scanner = new Scanner(System.in);
     }
@@ -106,9 +107,10 @@ public class TelaPrincipal {
         System.out.println("1. Gestão de Clientes");
         System.out.println("2. Gestão de Funcionários");
         System.out.println("3. Gestão de Estoque e Produtos");
-        System.out.println("4. Controle de Pátio");
+        System.out.println("4. Controle de Pátio e Caminhões");
         System.out.println("5. Vendas e Pedidos");
-        System.out.println("6. Relatórios Gerenciais");
+        System.out.println("6. Gestão de Entregas");
+        System.out.println("7. Relatórios Gerenciais");
     }
 
     private static void tratarOpcaoAdministrador(int opcao) {
@@ -118,7 +120,8 @@ public class TelaPrincipal {
             case 3: telaEstoque.exibirMenuEstoque(usuarioLogado); break;
             case 4: telaControlePatio.exibirMenuPatio(usuarioLogado); break;
             case 5: telaVendas.exibirMenuVendas(); break;
-            case 6: telaRelatorios.exibirMenuRelatorios(); break;
+            case 6: telaAgendamento.exibirMenuAgendamento(); break;
+            case 7: telaRelatorios.exibirMenuRelatorios(); break;
             case 0: break;
             default: System.out.println("Opção inválida. Tente novamente.");
         }

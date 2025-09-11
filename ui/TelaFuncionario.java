@@ -4,7 +4,6 @@ import fachada.DistribuidoraFachada;
 import negocio.Funcionario;
 import negocio.Motorista;
 import negocio.PerfilUsuario;
-import negocio.exceptions.CpfJaExistenteException;
 import negocio.exceptions.PontoException;
 
 import java.util.ArrayList;

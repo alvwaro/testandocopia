@@ -3,7 +3,6 @@ package dados;
 import dados.interfaces.IRepositorioFuncionario;
 import negocio.Funcionario;
 import negocio.Motorista;
-import java.time.LocalDateTime;
 import negocio.PerfilUsuario;
 import java.util.ArrayList;
 import java.util.List;

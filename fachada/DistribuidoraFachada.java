@@ -95,10 +95,11 @@ public class DistribuidoraFachada {
     public void cadastrarCliente(Cliente cliente) { this.repositorioCliente.cadastrar(cliente); }
     public Cliente buscarClientePorCpf(String cpf) { return this.repositorioCliente.buscarPorCpf(cpf); }
     public boolean removerCliente(String cpf) { return this.repositorioCliente.remover(cpf); }
-    public void cadastrarProduto(Produto produto) { this.estoque.cadastrarProduto(produto); this.repositorioEstoque.salvar(this.estoque.getProdutos());}
+    public void cadastrarProduto(Produto produto, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.estoque.cadastrarProduto(produto); this.repositorioEstoque.salvar(this.estoque.getProdutos());}
     public ArrayList<Produto> listarProdutos() { return this.estoque.listarProdutos(); }
     public Produto buscarProdutoPorCodigo(String codigo) { return this.estoque.consultarProduto(codigo); }
-    public boolean removerProduto(String codigo) {
+    public boolean removerProduto(String codigo, Funcionario usuarioLogado) {
+        checarPermissaoAdmin(usuarioLogado);
         Produto p = this.estoque.consultarProduto(codigo);
         if (p != null) {
             this.estoque.removerProduto(p);
@@ -107,7 +108,8 @@ public class DistribuidoraFachada {
         }
         return false;
     }
-    public void atualizarPreco(Produto produto, double novoPreco){
+    public void atualizarPreco(Produto produto, double novoPreco, Funcionario usuarioLogado){
+        checarPermissaoAdmin(usuarioLogado);
         produto.setPreco(novoPreco);
         this.repositorioEstoque.salvar(this.estoque.getProdutos());
     }
@@ -121,7 +123,7 @@ public class DistribuidoraFachada {
         cliente.realizarPagamento(pedido, valorPago, this.estoque);
         this.repositorioEstoque.salvar(this.estoque.getProdutos());
     }
-    public void cadastrarCaminhao(Caminhao caminhao) { this.repositorioCaminhao.cadastrar(caminhao); }
+    public void cadastrarCaminhao(Caminhao caminhao, Funcionario usuarioLogado) { checarPermissaoAdmin(usuarioLogado); this.repositorioCaminhao.cadastrar(caminhao); }
     public ArrayList<Caminhao> getTodosCaminhoes() { return this.repositorioCaminhao.listarTodos(); }
     public void cadastrarMotorista(Motorista motorista, Funcionario usuarioLogado){
         checarPermissaoAdmin(usuarioLogado);
@@ -156,10 +158,28 @@ public class DistribuidoraFachada {
         }
         return pedidosPagos;
     }
-    public List<Pedido> gerarRelatorioVendasHoje() { /* ... */ }
-    public List<Pedido> gerarRelatorioVendasSemana() { /* ... */ }
-    public List<Pedido> gerarRelatorioVendasMes() { /* ... */ }
-    public Map<String, Integer> gerarRelatorioProdutosMaisVendidos() { /* ... */ }
-    public Map<String, Double> gerarRelatorioClientesQueMaisCompram() { /* ... */ }
-    public List<Produto> gerarRelatorioEstoqueBaixo(int limite) { /* ... */ }
+    public List<Pedido> gerarRelatorioVendasHoje() {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioDoDia = agora.toLocalDate().atStartOfDay();
+        return GeradorRelatorios.filtrarPedidosPorPeriodo(getTodosPedidosPagos(), inicioDoDia, agora);
+    }
+    public List<Pedido> gerarRelatorioVendasSemana() {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioDaSemana = agora.toLocalDate().minusDays(agora.getDayOfWeek().getValue() - 1).atStartOfDay();
+        return GeradorRelatorios.filtrarPedidosPorPeriodo(getTodosPedidosPagos(), inicioDaSemana, agora);
+    }
+    public List<Pedido> gerarRelatorioVendasMes() {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioDoMes = agora.toLocalDate().withDayOfMonth(1).atStartOfDay();
+        return GeradorRelatorios.filtrarPedidosPorPeriodo(getTodosPedidosPagos(), inicioDoMes, agora);
+    }
+    public Map<String, Integer> gerarRelatorioProdutosMaisVendidos() {
+        return GeradorRelatorios.calcularProdutosMaisVendidos(getTodosPedidosPagos());
+    }
+    public Map<String, Double> gerarRelatorioClientesQueMaisCompram() {
+        return GeradorRelatorios.calcularClientesQueMaisCompram(this.repositorioCliente.listarTodos());
+    }
+    public List<Produto> gerarRelatorioEstoqueBaixo(int limite) {
+        return GeradorRelatorios.gerarRelatorioEstoqueBaixo(this.estoque, limite);
+    }
 }

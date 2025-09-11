@@ -37,8 +37,8 @@ public class TelaPrincipal {
 
         telaCliente = new TelaCliente(fachada);
         telaFuncionario = new TelaFuncionario(fachada);
-        telaEstoque = new TelaEstoque(fachada, estoque, usuarioLogado); // Passa o usuário
-        telaControlePatio = new TelaControlePatio(fachada, patio, usuarioLogado); // Passa o usuário
+        telaEstoque = new TelaEstoque(fachada, estoque, usuarioLogado);
+        telaControlePatio = new TelaControlePatio(fachada, patio);
         telaVendas = new TelaVendas(fachada, estoque);
         telaRelatorios = new TelaRelatorios(fachada);
         scanner = new Scanner(System.in);
@@ -115,7 +115,7 @@ public class TelaPrincipal {
             case 1: telaCliente.exibirMenuCliente(); break;
             case 2: telaFuncionario.exibirMenuFuncionario(usuarioLogado); break;
             case 3: telaEstoque.exibirMenuEstoque(usuarioLogado); break;
-            case 4: telaControlePatio.exibirMenuPatio(usuarioLogado); break;
+            case 4: telaControlePatio.exibirMenuPatio(); break;
             case 5: telaVendas.exibirMenuVendas(); break;
             case 6: telaRelatorios.exibirMenuRelatorios(); break;
             case 0: break;
@@ -123,8 +123,33 @@ public class TelaPrincipal {
         }
     }
 
-    private static void exibirMenuVendedor() { /* ... */ }
-    private static void tratarOpcaoVendedor(int opcao) { /* ... */ }
-    private static void exibirMenuEstoquista() { /* ... */ }
-    private static void tratarOpcaoEstoquista(int opcao) { /* ... */ }
+    private static void exibirMenuVendedor() {
+        System.out.println("1. Gestão de Clientes");
+        System.out.println("2. Vendas e Pedidos");
+        System.out.println("3. Consultar Estoque");
+    }
+
+    private static void tratarOpcaoVendedor(int opcao) {
+        switch (opcao) {
+            case 1: telaCliente.exibirMenuCliente(); break;
+            case 2: telaVendas.exibirMenuVendas(); break;
+            case 3: telaEstoque.listarTodosOsProdutos(); break;
+            case 0: break;
+            default: System.out.println("Opção inválida. Tente novamente.");
+        }
+    }
+
+    private static void exibirMenuEstoquista() {
+        System.out.println("1. Gestão de Estoque e Produtos");
+        System.out.println("2. Controle de Pátio");
+    }
+
+    private static void tratarOpcaoEstoquista(int opcao) {
+        switch (opcao) {
+            case 1: telaEstoque.exibirMenuEstoque(usuarioLogado); break;
+            case 2: telaControlePatio.exibirMenuPatio(); break;
+            case 0: break;
+            default: System.out.println("Opção inválida. Tente novamente.");
+        }
+    }
 }

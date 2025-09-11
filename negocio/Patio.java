@@ -33,14 +33,7 @@ public class Patio implements Serializable {
     }
 
     public boolean verificarSeCaminhaoEstaNoPatio(Caminhao caminhao) {
-        // O método contains() em ArrayList usa o equals() para comparar.
-        // Precisamos garantir que Caminhao tenha um método equals() adequado.
-        for (Caminhao c : this.caminhoesEstacionados) {
-            if (c.getPlaca().equals(caminhao.getPlaca())) {
-                return true;
-            }
-        }
-        return false;
+        return this.caminhoesEstacionados.contains(caminhao);
     }
 
     public void registrarEntrada(Caminhao caminhao) throws VagaInsuficienteException {
@@ -60,22 +53,14 @@ public class Patio implements Serializable {
     }
 
     public void registrarSaida(Caminhao caminhao) {
-        Caminhao caminhaoParaRemover = null;
         if (caminhao == null) {
             throw new IllegalArgumentException("Caminhão não pode ser nulo.");
         }
-        for (Caminhao c : this.caminhoesEstacionados) {
-            if (c.getPlaca().equals(caminhao.getPlaca())) {
-                caminhaoParaRemover = c;
-                break;
-            }
-        }
-
-        if (caminhaoParaRemover == null) {
+        if (!verificarSeCaminhaoEstaNoPatio(caminhao)) {
             throw new IllegalStateException("Caminhão com placa " + caminhao.getPlaca() + " não se encontra no pátio.");
         }
 
-        this.caminhoesEstacionados.remove(caminhaoParaRemover);
+        this.caminhoesEstacionados.remove(caminhao);
         caminhao.setStatus("Disponivel");
         System.out.println("Caminhão " + caminhao.getPlaca() + " saiu do pátio.");
     }

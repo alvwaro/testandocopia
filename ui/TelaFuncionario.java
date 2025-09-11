@@ -28,7 +28,7 @@ public class TelaFuncionario {
             System.out.println("2. Listar Todos os Funcionários");
             System.out.println("3. Buscar Funcionário por Matrícula");
             System.out.println("4. Remover Funcionário");
-            System.out.println("5. Bater Ponto (Qualquer funcionário)");
+            System.out.println("5. Bater Ponto");
             System.out.println("0. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção: ");
 
@@ -37,25 +37,13 @@ public class TelaFuncionario {
                 scanner.nextLine();
 
                 switch (opcao) {
-                    case 1:
-                        cadastrarFuncionario(usuarioLogado);
-                        break;
-                    case 2:
-                        listarTodosFuncionarios();
-                        break;
-                    case 3:
-                        buscarFuncionario();
-                        break;
-                    case 4:
-                        removerFuncionario(usuarioLogado);
-                        break;
-                    case 5:
-                        baterPonto();
-                        break;
-                    case 0:
-                        break;
-                    default:
-                        System.out.println("Opção inválida.");
+                    case 1: cadastrarFuncionario(usuarioLogado); break;
+                    case 2: listarTodosFuncionarios(); break;
+                    case 3: buscarFuncionario(); break;
+                    case 4: removerFuncionario(usuarioLogado); break;
+                    case 5: baterPonto(); break;
+                    case 0: break;
+                    default: System.out.println("Opção inválida.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("\nErro: Entrada inválida. Por favor, insira um número.");
@@ -92,33 +80,24 @@ public class TelaFuncionario {
             String senha = scanner.nextLine();
 
             System.out.println("Defina o perfil do usuário:");
-            System.out.println("1. Administrador");
-            System.out.println("2. Vendedor");
-            System.out.println("3. Estoquista");
+            System.out.println("1. Administrador\n2. Vendedor\n3. Estoquista");
             System.out.print("Escolha uma opção de perfil: ");
             int perfilOpt = scanner.nextInt();
             scanner.nextLine();
+            PerfilUsuario perfil = PerfilUsuario.VENDEDOR; // Padrão
+            if (perfilOpt == 1) perfil = PerfilUsuario.ADMINISTRADOR;
+            if (perfilOpt == 3) perfil = PerfilUsuario.ESTOQUISTA;
 
-            PerfilUsuario perfil;
-            switch (perfilOpt) {
-                case 1: perfil = PerfilUsuario.ADMINISTRADOR; break;
-                case 2: perfil = PerfilUsuario.VENDEDOR; break;
-                case 3: perfil = PerfilUsuario.ESTOQUISTA; break;
-                default:
-                    System.out.println("Opção de perfil inválida. Definindo como Vendedor por padrão.");
-                    perfil = PerfilUsuario.VENDEDOR;
-                    break;
-            }
-
+            Funcionario novoFuncionario;
             if (cargo.equalsIgnoreCase("Motorista")) {
                 System.out.print("CNH (apenas números): ");
                 String cnh = scanner.nextLine();
-                Motorista motorista = new Motorista(cnh, null, cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula, senha, perfil);
-                fachada.cadastrarMotorista(motorista, usuarioLogado);
+                novoFuncionario = new Motorista(cnh, null, cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula, senha, perfil);
             } else {
-                Funcionario funcionario = new Funcionario(cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula, senha, perfil);
-                fachada.cadastrarFuncionario(funcionario, usuarioLogado);
+                novoFuncionario = new Funcionario(cargo, salario, nome, idade, cpf, telefone, endereco, email, matricula, senha, perfil);
             }
+
+            fachada.cadastrarFuncionario(novoFuncionario, usuarioLogado);
             System.out.println("Funcionário cadastrado com sucesso!");
 
         } catch (InputMismatchException e) {
@@ -126,7 +105,7 @@ public class TelaFuncionario {
             scanner.nextLine();
         } catch (SecurityException e) {
             System.out.println("\nERRO DE PERMISSÃO: " + e.getMessage());
-        } catch (CpfJaExistenteException | IllegalArgumentException e) {
+        } catch (Exception e) {
             System.out.println("\nErro ao cadastrar funcionário: " + e.getMessage());
         }
     }
